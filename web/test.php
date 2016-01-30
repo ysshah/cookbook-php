@@ -13,9 +13,9 @@ $result = pg_query($pg_conn, "SELECT * FROM ingredients");
 if (!pg_num_rows($result)) {
     echo "Your connection is working, but your database is empty.";
 } else {
-    echo "Rows in your database:\n";
+    echo "Rows in your database:<br>";
     while ($row = pg_fetch_row($result)) {
-        echo $row[0];
+        echo $row[1]."<br>";
     }
 }
 ?>
