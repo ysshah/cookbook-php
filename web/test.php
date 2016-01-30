@@ -15,7 +15,7 @@ if (!pg_num_rows($result)) {
 } else {
     echo "Rows in your database:\n";
     while ($row = pg_fetch_row($result)) {
-        echo $row;
+        echo $row[0];
     }
 }
 ?>
