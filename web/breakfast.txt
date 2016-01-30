@@ -1,0 +1,31 @@
+Cereal
+cereal, milk
+===
+Bagel & cream cheese
+bagels, cream cheese
+===
+Pancakes
+pancake batter, butter, milk
+===
+Parfait
+bananas, vanana yogurt, maple pecan granola
+Cut bananas; Mix everything
+===
+Toast & butter
+bread, butter, sugar
+===
+Waffles
+waffles, butter, milk, maple syrup
+Toast in _______ at level _______ for ______ minutes
+===
+Apples
+===
+Bananas
+===
+Grapes
+===
+Oranges
+===
+Strawberries
+===
+Watermelon
