@@ -1,7 +1,5 @@
 alfredo sauce
-apples, 1/15/16
 bagels, 1/24/16, 1/28/16
-bananas, 1/24/16
 basil
 bread, 1/24/16
 butter
@@ -28,7 +26,6 @@ nuts
 olive oil
 onions, 1/24/16
 oregano
-paneer burji
 pasta
 peanut butter, 1/19/16
 pepper
