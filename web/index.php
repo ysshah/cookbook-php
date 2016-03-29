@@ -9,9 +9,12 @@ $lifespans = array();
 $result = pg_query("SELECT * FROM lifespans");
 while ($lifespan = pg_fetch_assoc($result)) {
     $lifespans[$lifespan["food"]] = array(
-        "roomtemp" => $lifespan["roomtemp"],
-        "fridge" => $lifespan["fridge"],
-        "freezer" => $lifespan["freezer"]);
+        "room" => $lifespan["roomtemp"],
+        "pantry" => $lifespan["roomtemp"],
+        "big fridge" => $lifespan["fridge"],
+        "mini fridge" => $lifespan["fridge"],
+        "big freezer" => $lifespan["freezer"],
+        "mini freezer" => $lifespan["freezer"]);
 }
 
 /* Ingredients */
@@ -105,9 +108,11 @@ while ($recipe = pg_fetch_assoc($result)) {
     <head>
         <title>Yash's Cookbook</title>
         <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <link rel="stylesheet" type="text/css" href="assets/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="assets/style.css">
         <script src="assets/jquery-1.11.3.min.js"></script>
         <script src="assets/jquery.tablesorter.js"></script>
+        <script src="assets/bootstrap.min.js"></script>
         <script src="assets/script.js"></script>
     </head>
     <body>
@@ -123,7 +128,7 @@ while ($recipe = pg_fetch_assoc($result)) {
                 <tbody>
                     <?php
                     foreach ($ingredients as $ingredient => $days) {
-                        echo "<tr><td>$ingredient</td>"
+                        echo "<tr><td><div data-toggle='tooltip' data-placement='right' title='Purchased on'>$ingredient</div></td>"
                             ."<td class='remaining'>$days</td></tr>";
                     }
                     ?>

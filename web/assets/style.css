@@ -1,16 +1,14 @@
-html, body, ol, ul {
-    margin: 0;
-}
 html {
     height: 100%;
 }
 body {
     font-family: Baskerville, Arial, sans-serif;
+    font-size: 16px;
     height: 100%;
 }
 .column {
     float: left;
-    width: 31%;
+    width: 33%;
     height: 97%;
     overflow: scroll;
     vertical-align: top;
@@ -43,6 +41,9 @@ th {
 }
 th:focus {
     outline: none;
+}
+table tr td div {
+    display: inline-block;
 }
 .remaining {
     text-align: right;

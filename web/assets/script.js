@@ -1,5 +1,9 @@
 $(document).ready(function(){
 
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+
     /* Apply tablesorter function to all tables. */
     $("table").tablesorter({
         emptyTo: "bottom",
