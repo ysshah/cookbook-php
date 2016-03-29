@@ -11,6 +11,7 @@ while ($lifespan = pg_fetch_assoc($result)) {
     $lifespans[$lifespan["food"]] = array(
         "room" => $lifespan["roomtemp"],
         "pantry" => $lifespan["roomtemp"],
+        "spice cabinet" => $lifespan["roomtemp"],
         "big fridge" => $lifespan["fridge"],
         "mini fridge" => $lifespan["fridge"],
         "big freezer" => $lifespan["freezer"],
@@ -34,7 +35,10 @@ while ($ingredient = pg_fetch_assoc($result)) {
             $remain = ceil($life - $elapsed);
         }
     }
-    $ingredients[$name] = $remain;
+    $ingredients[$name] = array(
+        "remain" => $remain,
+        "location" => $ingredient["location"],
+        "purchase" => $ingredient["purchase"]);
 }
 
 function generateRecipeHTMLs($recipe, $num) {
@@ -52,7 +56,7 @@ function generateRecipeHTMLs($recipe, $num) {
             $days = "";
             if (array_key_exists($ingredient, $ingredients)) {
                 $instock = "yes";
-                $days = $ingredients[$ingredient];
+                $days = $ingredients[$ingredient]["remain"];
                 if ($days !== "" and ($remain === "" or $days < $remain)) {
                     $remain = $days;
                 }
@@ -67,7 +71,7 @@ function generateRecipeHTMLs($recipe, $num) {
     } else {
         $lower = strtolower($name);
         if (array_key_exists($lower, $ingredients)) {
-            $remain = $ingredients[$lower];
+            $remain = $ingredients[$lower]["remain"];
         } else {
             $able = "no";
         }
@@ -127,8 +131,11 @@ while ($recipe = pg_fetch_assoc($result)) {
                 </thead>
                 <tbody>
                     <?php
-                    foreach ($ingredients as $ingredient => $days) {
-                        echo "<tr><td><div data-toggle='tooltip' data-placement='right' title='Purchased on'>$ingredient</div></td>"
+                    foreach ($ingredients as $ingredient => $info) {
+                        $days = $info["remain"];
+                        $location = $info["location"];
+                        $purchase = $info["purchase"];
+                        echo "<tr><td><div data-toggle='tooltip' data-placement='right' title='Located in $location'>$ingredient</div></td>"
                             ."<td class='remaining'>$days</td></tr>";
                     }
                     ?>
