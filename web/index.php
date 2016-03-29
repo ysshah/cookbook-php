@@ -1,7 +1,8 @@
 <?php
 include_once("includes/db.php");
 
-$today = new DateTime("now");
+$today = time();
+$secondsInDay = 86400;
 
 /* Lifespans */
 $lifespans = array();
@@ -20,14 +21,14 @@ while ($ingredient = pg_fetch_assoc($result)) {
     $name = $ingredient["ingredient"];
     $remain = "";
     if ($ingredient["expiration"]) {
-        $expire = new DateTime($ingredient["expiration"]);
-        $remain = $expire->diff($today)->days;
+        $expire = strtotime($ingredient["expiration"]);
+        $remain = ceil(($expire - $today) / $secondsInDay);
     } else if ($ingredient["purchase"]) {
         if (array_key_exists($name, $lifespans)) {
             $life = intval($lifespans[$name][$ingredient["location"]]);
-            $purchaseDate = new DateTime($ingredient["purchase"]);
-            $elapsed = $today->diff($purchaseDate)->days;
-            $remain = $life - $elapsed;
+            $purchaseDate = strtotime($ingredient["purchase"]);
+            $elapsed = ($today - $purchaseDate) / $secondsInDay;
+            $remain = ceil($life - $elapsed);
         }
     }
     $ingredients[$name] = $remain;
