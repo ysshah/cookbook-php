@@ -1,92 +1,118 @@
-html {
-    height: 100%;
-}
+/* CSS Reset */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline; }
+
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+  display: block; }
+
 body {
-    font-family: Baskerville, Arial, sans-serif;
-    font-size: 16px;
-    height: 100%;
-}
+  line-height: 1; }
+
+ol, ul {
+  list-style: none; }
+
+blockquote, q {
+  quotes: none; }
+  blockquote:before, blockquote:after, q:before, q:after {
+    content: '';
+    content: none; }
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0; }
+
+html {
+  height: 100%; }
+
+body {
+  font-family: Baskerville, Arial, sans-serif;
+  font-size: 16px;
+  height: 100%; }
+
 .column {
-    float: left;
-    width: 33%;
-    height: 97%;
-    overflow: scroll;
-    vertical-align: top;
-    padding: 0 1%;
-    line-height: 1.3;
-}
-.border {
-    float: left;
-    height: 100%;
-    width: 0.5%;
-    background-color: grey;
-}
-.column .title {
+  float: left;
+  width: 33%;
+  height: 97%;
+  overflow: scroll;
+  vertical-align: top;
+  padding: 0 1%;
+  line-height: 1.3; }
+  .column .title {
     display: flex;
     font-size: 24px;
     justify-content: center;
     align-content: center;
     flex-direction: column;
     text-align: center;
-    height: 8%;
-}
+    height: 8%; }
+  .column .subtitle {
+    text-decoration: underline; }
+
+.border {
+  float: left;
+  height: 100%;
+  width: 0.5%;
+  background-color: grey; }
+
 table {
-    width: 100%;
-    border-collapse: collapse;
-}
+  width: 100%; }
+  table tr td div {
+    display: inline-block; }
+
 th {
-    font-weight: 400;
-    text-decoration: underline;
-    text-align: left;
-}
-th:focus {
-    outline: none;
-}
-table tr td div {
-    display: inline-block;
-}
+  font-weight: 400;
+  text-decoration: underline;
+  text-align: left; }
+  th:focus {
+    outline: none; }
+
 .remaining {
-    text-align: right;
-}
-/*
-#ingredients div, .ingredients div, .item div {
-    display: flex;
-    justify-content: space-between;
-}*/
-.column .subtitle {
-    text-decoration: underline;
-}
+  text-align: right; }
+
 .item {
-    cursor: pointer;
-}
-.item:hover {
-    text-decoration: underline;
-/*    font-weight: 600;*/
-}
+  cursor: pointer; }
+  .item:hover {
+    text-decoration: underline; }
+
 .selected {
-/*    font-weight: 600;*/
-/*    text-decoration: underline;*/
-    background-color: beige;
-}
+  background-color: beige; }
+
 #recipes {
-    height: 92%;
-    overflow: hidden;
-}
+  height: 92%;
+  overflow: hidden; }
+
 .recipe {
-    height: 100%;
-}
-.recipe .name {
-    font-size: 20px;
-}
+  height: 100%; }
+  .recipe .name {
+    font-size: 20px; }
+
 .ingr-title, .instr-title {
-    margin-top: 10px;
-    text-decoration: underline;
-}
+  margin-top: 10px;
+  text-decoration: underline; }
+
 .yes {
-    color: green;
-    /*color: #1abc9c;*/
-}
+  color: green; }
+
 .no {
-    color: red;
-    /*color: #de6868;*/
-}
+  color: red; }
+
+/*# sourceMappingURL=style.css.map */
