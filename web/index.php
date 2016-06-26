@@ -48,12 +48,13 @@ function generateRecipeHTMLs($recipe, $num) {
     $remain = $ingrHTML = $instHTML = "";
     $able = "yes";
 
-    if ($recipe["ingredients"]) {
+    $result = pg_query("SELECT * FROM recipe_ingredients WHERE recipe_id = ".$recipe["id"]);
+    if (pg_num_rows($result)) {
         $ingrHTML .= "<table class='ingredients'><thead><tr><th>Ingredients</th>"
             ."<th class='remaining'>Days remaining</th></tr></thead><tbody>";
-        $theseIngredients = explode(", ", $recipe["ingredients"]);
-        foreach ($theseIngredients as $ingredient) {
+        while ($ingredientArray = pg_fetch_assoc($result)) {
             $days = "";
+            $ingredient = $ingredientArray["name"];
             if (array_key_exists($ingredient, $ingredients)) {
                 $instock = "yes";
                 $days = $ingredients[$ingredient]["remain"];
@@ -81,12 +82,12 @@ function generateRecipeHTMLs($recipe, $num) {
         $remain = "";
     }
 
-    if ($recipe["instructions"]) {
+    $result = pg_query("SELECT instruction, number FROM recipe_instructions WHERE recipe_id = ".$recipe["id"]." ORDER BY number");
+    if (pg_num_rows($result)) {
         $instHTML = "<div class='instr-title'>Instructions</div>"
             ."<ol class='instructions'>";
-        $instructions = explode("; ", $recipe["instructions"]);
-        foreach ($instructions as $instruction) {
-            $instHTML .= "<li class='instruction'>$instruction</li>";
+        while ($instruction = pg_fetch_assoc($result)) {
+            $instHTML .= "<li class='instruction'>".$instruction["number"].". ".$instruction["instruction"]."</li>";
         }
         $instHTML .= "</ol>";
     }
