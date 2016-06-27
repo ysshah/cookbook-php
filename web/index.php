@@ -121,8 +121,20 @@ while ($recipe = pg_fetch_assoc($result)) {
         <script src="assets/script.js"></script>
     </head>
     <body>
+        <div id="modal-wrapper">
+            <div id="modal">
+                <div id="modal-title">Add New Recipe</div>
+                <input id="recipe-name" type="text" placeholder="Name">
+                <input class="recipe-ingredient" type="text" placeholder="Ingredient 1">
+                <input class="recipe-ingredient" type="text" placeholder="Ingredient 2">
+                <input class="recipe-instruction" type="text" placeholder="Step 1">
+                <input class="recipe-instruction" type="text" placeholder="Step 2">
+                <button id="recipe-save">Save</button>
+            </div>
+        </div>
         <div class="column">
             <div class="title">Current Ingredients</div>
+            <button id="add-ingredients">Add new</button>
             <table id="ingredients">
                 <thead>
                     <tr>
@@ -205,6 +217,7 @@ while ($recipe = pg_fetch_assoc($result)) {
         <div class="border"></div>
         <div class="column">
             <div class="title">Recipe</div>
+            <button id="add-recipe">Add new</button>
             <div id="recipes">
             <?php
             foreach ($recipes as $name => $info) {

@@ -35,4 +35,33 @@ $(document).ready(function(){
         }
     });
 
+    $("button#add-recipe").click(function() {
+        alert("hello");
+    });
+
+    $("button#recipe-save").click(function() {
+        var ingredients = [], instructions = [];
+        var ingrInputs = document.querySelectorAll("input.recipe-ingredient");
+        var instInputs = document.querySelectorAll("input.recipe-instruction");
+        for (var i = 0; i < ingrInputs.length; i++) {
+            ingredients.push(ingrInputs[i].value);
+        }
+        for (var i = 0; i < instInputs.length; i++) {
+            instructions.push(instInputs[i].value);
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "ajax/functions.php",
+            data: {
+                name : document.querySelector("input#recipe-name").value,
+                ingrArray : ingredients,
+                instArray : instructions
+            },
+            success: function(msg) {
+                alert(msg);
+            }
+        });
+    });
+
 });
