@@ -54,23 +54,6 @@ body {
     font-size: 16px;
     height: 100%;
 }
-
-#modal-wrapper {
-    height: 100%;
-    width: 100%;
-    position: fixed;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-#modal {
-    height: 80vh;
-    width: 80vw;
-    max-width: 850px;
-    background-color: white;
-    box-shadow: 0px 0px 20px grey;
-}
-
 .column {
     float: left;
     width: 33%;
@@ -150,4 +133,24 @@ th {
 }
 .no {
     color: $no-color;
+}
+
+/* New Recipe */
+#modal-wrapper {
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#modal {
+    height: 80vh;
+    width: 80vw;
+    max-width: 850px;
+    background-color: white;
+    box-shadow: 0px 0px 20px grey;
+}
+input {
+    display: block;
 }

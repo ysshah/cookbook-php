@@ -64,4 +64,8 @@ $(document).ready(function(){
         });
     });
 
+    $("input.recipe-ingredient.last").focusin(function() {
+        console.log("focused");
+    });
+
 });
