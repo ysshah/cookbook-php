@@ -20,7 +20,7 @@ $(document).ready(function(){
     });
 
     /* Select the topmost recipe on page load. */
-    $(".items").find("tr")[1].click();
+//    $(".items").find("tr")[1].click();
 
     /* Advance to next or previous recipe on arrow key press.
      * <- = 37, ^ = 38, -> = 39, v = 40 */
@@ -54,9 +54,50 @@ $(document).ready(function(){
             type: "POST",
             url: "ajax/functions.php",
             data: {
+                action : 'add_recipe',
                 name : document.querySelector("input#recipe-name").value,
                 ingrArray : ingredients,
                 instArray : instructions
+            },
+            success: function(msg) {
+                alert(msg);
+            }
+        });
+    });
+
+    $("button.login").click(function() {
+        var un = document.querySelector("input.username.login").value;
+        var pw = document.querySelector("input.password.login").value;
+
+        $.ajax({
+            type: "POST",
+            url: "ajax/functions.php",
+            data: {
+                action : 'login',
+                username : un,
+                password : pw
+            },
+            success: function(msg) {
+                if (msg == 0) {
+                    location.reload();
+                } else {
+                    alert("Failed.");
+                }
+            }
+        });
+    });
+
+    $("button.create").click(function() {
+        var un = document.querySelector("input.username.create").value;
+        var pw = document.querySelector("input.password.create").value;
+
+        $.ajax({
+            type: "POST",
+            url: "ajax/functions.php",
+            data: {
+                action : 'create_account',
+                username : un,
+                password : pw
             },
             success: function(msg) {
                 alert(msg);

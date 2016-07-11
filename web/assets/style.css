@@ -48,6 +48,9 @@ body {
   font-size: 16px;
   height: 100%; }
 
+form.login {
+  margin-bottom: 100px; }
+
 .column {
   float: left;
   width: 33%;

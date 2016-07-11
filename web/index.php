@@ -15,7 +15,27 @@
     <body>
 
 <?php
-if (isset($_SESSION["username"])) {
+if (isset($_POST["action"]) && $_POST["action"] == "Log Out") {
+    unset($_SESSION["username"]);
+    echo "Successfully logged out.";
+}
+if (!isset($_SESSION["username"])) { ?>
+
+    <form class="login" action="javascript:void(0);">
+        <input class="username login" type="text" name="username" placeholder="Username or Email">
+        <input class="password login" type="password" name="password" placeholder="Password">
+        <button class="login">Log In</button>
+        <div>Create Account</div>
+    </form>
+
+    <form class="create" action="javascript:void(0);">
+        <input class="username create" type="text" name="username" placeholder="Username">
+        <input class="password create" type="password" name="password" placeholder="Password">
+        <input class="email create" type="text" name="email" placeholder="Email">
+        <button class="create">Create Account</button>
+    </form>
+
+<?php } else {
 
     $today = time();
     $secondsInDay = 86400;
@@ -124,6 +144,9 @@ if (isset($_SESSION["username"])) {
 
     ?>
 
+    <form action="index.php" method="post">
+        <input type="submit" name="action" value="Log Out">
+    </form>
     <div id="modal-wrapper">
         <div id="modal">
             <div id="modal-title">Add New Recipe</div>
@@ -229,23 +252,6 @@ if (isset($_SESSION["username"])) {
         ?>
         </div>
     </div>
-
-<?php } elseif (isset($_POST["username"]) && isset($_POST["password"])) {
-
-    $username = $_POST["username"];
-    $password = $_POST["password"];
-    $check = pg_query("SELECT * FROM users WHERE username = '$username' AND password = '$password'");
-    if (pg_num_rows($check)) {
-        $_SESSION["username"] = $username;
-    } else {
-        echo "Incorrect username and/or password.";
-    }
-
-} else { ?>
-
-    <input type="text" placeholder="Username">
-    <input type="password" placeholder="Password">
-    <button>Log In</button>
 
 <?php } ?>
 
