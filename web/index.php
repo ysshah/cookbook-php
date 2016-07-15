@@ -17,6 +17,7 @@
 <?php
 if (isset($_POST["action"]) && $_POST["action"] == "Log Out") {
     unset($_SESSION["username"]);
+    unset($_POST["action"]);
     echo "Successfully logged out.";
 }
 if (!isset($_SESSION["username"])) { ?>
@@ -142,6 +143,7 @@ if (!isset($_SESSION["username"])) { ?>
         $num += 1;
     }
 
+    echo "Logged in: ".$_SESSION["username"]." with id = ".$_SESSION["user_id"];
     ?>
 
     <form action="index.php" method="post">

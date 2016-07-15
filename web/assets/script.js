@@ -79,7 +79,7 @@ $(document).ready(function(){
             },
             success: function(msg) {
                 if (msg == 0) {
-                    location.reload();
+                    window.location.href = "index.php";
                 } else {
                     alert("Failed.");
                 }
