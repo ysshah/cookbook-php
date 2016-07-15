@@ -41,13 +41,17 @@ $(document).ready(function(){
 
     $("button#recipe-save").click(function() {
         var ingredients = [], instructions = [];
-        var ingrInputs = document.querySelectorAll("input.recipe-ingredient");
-        var instInputs = document.querySelectorAll("input.recipe-instruction");
+        var ingrInputs = $("input.recipe-ingredient");
+        var instInputs = $("input.recipe-instruction");
         for (var i = 0; i < ingrInputs.length; i++) {
-            ingredients.push(ingrInputs[i].value);
+            if (ingrInputs[i].value) {
+                ingredients.push(ingrInputs[i].value);
+            }
         }
         for (var i = 0; i < instInputs.length; i++) {
-            instructions.push(instInputs[i].value);
+            if (instInputs[i].value) {
+                instructions.push(instInputs[i].value);
+            }
         }
 
         $.ajax({
@@ -55,12 +59,18 @@ $(document).ready(function(){
             url: "ajax/functions.php",
             data: {
                 action : 'add_recipe',
-                name : document.querySelector("input#recipe-name").value,
+                name : $("input#recipe-name").val(),
                 ingrArray : ingredients,
                 instArray : instructions
             },
             success: function(msg) {
-                alert(msg);
+                console.log(msg);
+                if (msg == 0) {
+                    alert('added');
+                    $("#modal-wrapper").hide();
+                } else {
+                    alert('recipe name taken');
+                }
             }
         });
     });
