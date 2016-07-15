@@ -12,7 +12,7 @@ if (isset($_POST["action"])) {
             pg_query("INSERT INTO recipes (name, user_id) VALUES ('$name', '$user_id')");
             $id = pg_fetch_assoc(pg_query(
                 "SELECT id FROM recipes WHERE name = '$name' and user_id = '$user_id'"))["id"];
-            if ($_POST["ingrArray"]) {
+            if (isset($_POST["ingrArray"])) {
                 $pairs = [];
                 foreach ($_POST["ingrArray"] as $ingr) {
                     array_push($pairs, "('$ingr', '$id', '$user_id')");
@@ -21,10 +21,11 @@ if (isset($_POST["action"])) {
                 echo $pairs."\n";
                 pg_query("INSERT INTO recipe_ingredients (name, recipe_id, user_id) VALUES $pairs");
             }
-            if ($_POST["instArray"]) {
+            if (isset($_POST["instArray"])) {
                 $pairs = [];
-                foreach ($_POST["instArray"] as $inst) {
-                    array_push($pairs, "('$inst', '', '$id', '$user_id')");
+                foreach ($_POST["instArray"] as $key => $inst) {
+                    $num = $key + 1;
+                    array_push($pairs, "('$inst', '$num', '$id', '$user_id')");
                 }
                 $pairs = implode(", ", $pairs);
                 echo $pairs."\n";
