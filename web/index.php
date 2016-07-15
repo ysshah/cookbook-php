@@ -38,6 +38,8 @@ if (!isset($_SESSION["username"])) { ?>
 
 <?php } else {
 
+    $user_id = $_SESSION["user_id"];
+
     $today = time();
     $secondsInDay = 86400;
 
@@ -57,7 +59,7 @@ if (!isset($_SESSION["username"])) { ?>
 
     /* Ingredients */
     $ingredients = array();
-    $result = pg_query("SELECT * FROM ingredients");
+    $result = pg_query("SELECT * FROM ingredients WHERE user_id = '$user_id'");
     while ($ingredient = pg_fetch_assoc($result)) {
         $name = $ingredient["ingredient"];
         $remain = "";
@@ -79,13 +81,13 @@ if (!isset($_SESSION["username"])) { ?>
     }
 
     function generateRecipeHTMLs($recipe, $num) {
-        global $ingredients;
+        global $ingredients, $user_id;
 
         $name = $recipe["name"];
         $remain = $ingrHTML = $instHTML = "";
         $able = "yes";
 
-        $result = pg_query("SELECT * FROM recipe_ingredients WHERE recipe_id = ".$recipe["id"]);
+        $result = pg_query("SELECT * FROM recipe_ingredients WHERE recipe_id = ".$recipe["id"]." AND user_id = '$user_id'");
         if (pg_num_rows($result)) {
             $ingrHTML .= "<table class='ingredients'><thead><tr><th>Ingredients</th>"
                 ."<th class='remaining'>Days remaining</th></tr></thead><tbody>";
@@ -119,7 +121,7 @@ if (!isset($_SESSION["username"])) { ?>
             $remain = "";
         }
 
-        $result = pg_query("SELECT instruction, number FROM recipe_instructions WHERE recipe_id = ".$recipe["id"]." ORDER BY number");
+        $result = pg_query("SELECT instruction, number FROM recipe_instructions WHERE recipe_id = ".$recipe["id"]." AND user_id = '$user_id' ORDER BY number");
         if (pg_num_rows($result)) {
             $instHTML = "<div class='instr-title'>Instructions</div>"
                 ."<ol class='instructions'>";
@@ -137,7 +139,7 @@ if (!isset($_SESSION["username"])) { ?>
     /* Recipes */
     $num = 0;
     $recipes = array();
-    $result = pg_query("SELECT * FROM recipes");
+    $result = pg_query("SELECT * FROM recipes WHERE user_id = '$user_id'");
     while ($recipe = pg_fetch_assoc($result)) {
         $recipes[$recipe["name"]] = generateRecipeHTMLs($recipe, $num);
         $num += 1;
