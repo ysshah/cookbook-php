@@ -8,6 +8,7 @@
         <link rel="stylesheet" type="text/css" href="assets/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="assets/style.css">
         <script src="assets/jquery-1.11.3.min.js"></script>
+        <script src="assets/jquery.validate.min.js"></script>
         <script src="assets/jquery.tablesorter.js"></script>
         <script src="assets/bootstrap.min.js"></script>
         <script src="assets/script.js"></script>
@@ -23,17 +24,28 @@ if (isset($_POST["action"]) && $_POST["action"] == "Log Out") {
 if (!isset($_SESSION["username"])) { ?>
 
     <form class="login" action="javascript:void(0);">
-        <input class="username login" type="text" name="username" placeholder="Username or Email">
-        <input class="password login" type="password" name="password" placeholder="Password">
-        <button class="login">Log In</button>
-        <div>Create Account</div>
+        <h4>Log In</h4>
+        <div class="form-group">
+            <input class="form-control username login" type="text" name="username" placeholder="Username or Email" required>
+        </div>
+        <div class="form-group">
+            <input class="form-control password login" type="password" name="password" placeholder="Password" required>
+        </div>
+        <button type="submit" class="btn btn-default login">Log In</button>
     </form>
 
     <form class="create" action="javascript:void(0);">
-        <input class="username create" type="text" name="username" placeholder="Username">
-        <input class="password create" type="password" name="password" placeholder="Password">
-        <input class="email create" type="text" name="email" placeholder="Email">
-        <button class="create">Create Account</button>
+        <h4>Create Account</h4>
+        <div class="form-group">
+            <input class="form-control username create" type="text" name="username" placeholder="Username" required>
+        </div>
+        <div class="form-group">
+            <input class="form-control password create" type="password" name="password" placeholder="Password" required>
+        </div>
+        <div class="form-group">
+            <input class="form-control email create" type="email" name="email" placeholder="Email" required>
+        </div>
+        <button type="submit" class="btn btn-default create">Create Account</button>
     </form>
 
 <?php } else {
@@ -160,10 +172,10 @@ if (!isset($_SESSION["username"])) { ?>
                     <h4 class="modal-title" id="myModalLabel">Add New Recipe</h4>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form class="create-recipe">
                         <div class="form-group">
                             <label class="control-label" for="recipe-name">Recipe Name</label>
-                            <input class="form-control" type="text" id="recipe-name" placeholder="Required">
+                            <input class="form-control" type="text" id="recipe-name" placeholder="Required" required>
                         </div>
                         <div class="form-group">
                             <label>Ingredients</label>

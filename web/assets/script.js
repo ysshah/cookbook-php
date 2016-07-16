@@ -1,8 +1,8 @@
 $(document).ready(function(){
 
     $(function () {
-        $('[data-toggle="tooltip"]').tooltip()
-    })
+        $('[data-toggle="tooltip"]').tooltip();
+    });
 
     /* Apply tablesorter function to all tables. */
     $("table").tablesorter({
@@ -77,7 +77,6 @@ $(document).ready(function(){
                 console.log(msg);
                 if (msg == 0) {
                     alert('added');
-                    $("#modal-wrapper").hide();
                 } else {
                     alert('recipe name taken');
                 }
@@ -85,9 +84,11 @@ $(document).ready(function(){
         });
     });
 
-    $("button.login").click(function() {
-        var un = document.querySelector("input.username.login").value;
-        var pw = document.querySelector("input.password.login").value;
+    $("form.login").submit(function(e) {
+        e.preventDefault();
+
+        var un = $("input.username.login").val();
+        var pw = $("input.password.login").val();
 
         $.ajax({
             type: "POST",
@@ -101,15 +102,19 @@ $(document).ready(function(){
                 if (msg == 0) {
                     window.location.href = "index.php";
                 } else {
-                    alert("Failed.");
+                    alert("Incorrect username and/or password.");
                 }
             }
         });
     });
 
-    $("button.create").click(function() {
-        var un = document.querySelector("input.username.create").value;
-        var pw = document.querySelector("input.password.create").value;
+//    $("form.create").validate();
+
+    $("form.create").submit(function(e) {
+        e.preventDefault();
+
+        var un = $("input.username.create").val();
+        var pw = $("input.password.create").val();
 
         $.ajax({
             type: "POST",

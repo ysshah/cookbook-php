@@ -1,3 +1,4 @@
 vendor/
 composer.lock
 web/assets/*.map
+web/includes/db.php
