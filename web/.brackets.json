@@ -1,0 +1,11 @@
+{
+    "path": {
+        "assets/style.scss": {
+            "sass.enabled": true,
+            "sass.options": {
+                "sourceComments": false
+            },
+            "linting.collapsed": false
+        }
+    }
+}

@@ -24,19 +24,29 @@ $(document).ready(function(){
 
     /* Advance to next or previous recipe on arrow key press.
      * <- = 37, ^ = 38, -> = 39, v = 40 */
-    $("html").keydown(function(e) {
-        if (37 <= e.which && e.which <= 40) {
-            e.preventDefault();
-            if (e.which <= 38) {
-                $($(".items").find(".selected")[0]).prev().click();
-            } else {
-                $($(".items").find(".selected")[0]).next().click();
-            };
-        }
-    });
+//    $("html").keydown(function(e) {
+//        if (37 <= e.which && e.which <= 40) {
+//            e.preventDefault();
+//            if (e.which <= 38) {
+//                $($(".items").find(".selected")[0]).prev().click();
+//            } else {
+//                $($(".items").find(".selected")[0]).next().click();
+//            };
+//        }
+//    });
 
-    $("button#add-recipe").click(function() {
-        alert("hello");
+//    $("button#add-recipe").click(function() {
+//        alert("hello");
+//    });
+
+    $("ul,ol").on("keypress", "input.last", function(e) {
+        if (this.value) {
+            $(this).removeClass("last");
+            var next = $(this).clone();
+            next.addClass("last");
+            next.val("");
+            $(this).parent().parent().append($("<li></li>").append(next));
+        }
     });
 
     $("button#recipe-save").click(function() {
@@ -113,10 +123,6 @@ $(document).ready(function(){
                 alert(msg);
             }
         });
-    });
-
-    $("input.recipe-ingredient.last").focusin(function() {
-        console.log("focused");
     });
 
 });

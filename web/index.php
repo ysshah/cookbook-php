@@ -145,26 +145,74 @@ if (!isset($_SESSION["username"])) { ?>
         $num += 1;
     }
 
-    echo "Logged in: ".$_SESSION["username"]." with id = ".$_SESSION["user_id"];
+    echo "<div>Logged in: ".$_SESSION["username"]." with id = ".$_SESSION["user_id"]."</div>";
     ?>
 
     <form action="index.php" method="post">
         <input type="submit" name="action" value="Log Out">
     </form>
-    <div id="modal-wrapper">
-        <div id="modal">
-            <div id="modal-title">Add New Recipe</div>
-            <input id="recipe-name" type="text" placeholder="Name">
-            <input class="recipe-ingredient" type="text" placeholder="Ingredient 1">
-            <input class="recipe-ingredient last" type="text" placeholder="Ingredient 2">
-            <input class="recipe-instruction" type="text" placeholder="Step 1">
-            <input class="recipe-instruction last" type="text" placeholder="Step 2">
-            <button id="recipe-save">Save</button>
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Add New Recipe</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label class="control-label" for="recipe-name">Recipe Name</label>
+                            <input class="form-control" type="text" id="recipe-name" placeholder="Required">
+                        </div>
+                        <div class="form-group">
+                            <label>Ingredients</label>
+                            <ul>
+                                <li><input class="form-control recipe-ingredient last" type="text"></li>
+                            </ul>
+                        </div>
+                        <div class="form-group">
+                            <label>Instructions</label>
+                            <ol>
+                                <li><input class="form-control recipe-instruction last" type="text"></li>
+                            </ol>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Save</button>
+                </div>
+            </div>
         </div>
     </div>
+
+    <div class="modal fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Add Ingredient(s)</h4>
+                </div>
+                <div class="modal-body">
+                    <label>Name</label>
+                    <input type="text">
+                    <label>Purchase Date</label>
+                    <input type="text">
+                    <label>Expiration Date</label>
+                    <input type="text">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="column">
         <div class="title">Current Ingredients</div>
-        <button id="add-ingredients">Add new</button>
+        <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">Launch demo modal</button>
         <table id="ingredients">
             <thead>
                 <tr>
