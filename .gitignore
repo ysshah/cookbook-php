@@ -1,4 +1,5 @@
-vendor/
 composer.lock
+web/test.php
 web/assets/*.map
 web/includes/db.php
+vendor/

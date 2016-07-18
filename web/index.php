@@ -88,6 +88,7 @@ if (!isset($_SESSION["username"])) { ?>
         }
         $ingredients[$name] = array(
             "remain" => $remain,
+            "expiration" => $ingredient["expiration"],
             "location" => $ingredient["location"],
             "purchase" => $ingredient["purchase"]);
     }
@@ -138,14 +139,14 @@ if (!isset($_SESSION["username"])) { ?>
             $instHTML = "<div class='instr-title'>Instructions</div>"
                 ."<ol class='instructions'>";
             while ($instruction = pg_fetch_assoc($result)) {
-                $instHTML .= "<li class='instruction'>".$instruction["number"].". ".$instruction["instruction"]."</li>";
+                $instHTML .= "<li class='instruction'>".$instruction["instruction"]."</li>";
             }
             $instHTML .= "</ol>";
         }
 
-        $recipeHTMl = "<div id='$num' class='recipe'><div class='name'>$name</div>$ingrHTML$instHTML</div>";
+        $recipeHTML = "<div id='$num' class='recipe'><div class='name'>$name</div>$ingrHTML$instHTML</div>";
         $itemHTML = "<tr class='item $able' id='$num'><td>$name</td><td class='remaining'>$remain</td></tr>";
-        return array($recipe["mealtype"], $itemHTML, $recipeHTMl);
+        return array($recipe["mealtype"], $itemHTML, $recipeHTML);
     }
 
     /* Recipes */
@@ -156,23 +157,24 @@ if (!isset($_SESSION["username"])) { ?>
         $recipes[$recipe["name"]] = generateRecipeHTMLs($recipe, $num);
         $num += 1;
     }
-
-    echo "<div>Logged in: ".$_SESSION["username"]." with id = ".$_SESSION["user_id"]."</div>";
     ?>
 
-    <form action="index.php" method="post">
+    <div id="loggedin">Logged in: <?php echo $_SESSION["username"]; ?></div>
+
+    <form id="logout" action="index.php" method="post">
         <input type="submit" name="action" value="Log Out">
     </form>
 
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal fade" id="new-recipe" tabindex="-1" role="dialog" aria-labelledby="new-recipe-label">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="myModalLabel">Add New Recipe</h4>
+                    <h4 class="modal-title" id="new-recipe-label">Add New Recipe</h4>
                 </div>
                 <div class="modal-body">
-                    <form class="create-recipe">
+                    <form class="new-recipe">
+                        <input type="submit" id="submit-new-recipe" class="hidden">
                         <div class="form-group">
                             <label class="control-label" for="recipe-name">Recipe Name</label>
                             <input class="form-control" type="text" id="recipe-name" placeholder="Required" required>
@@ -193,30 +195,50 @@ if (!isset($_SESSION["username"])) { ?>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary">Save</button>
+                    <label for="submit-new-recipe" class="btn btn-primary">Save</label>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2">
-        <div class="modal-dialog" role="document">
+    <div class="modal fade bs-example-modal-lg" id="new-ingredients" tabindex="-1" role="dialog" aria-labelledby="new-ingredients-label">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="myModalLabel">Add Ingredient(s)</h4>
+                    <h4 class="modal-title" id="new-ingredients-label">Add Ingredient(s)</h4>
                 </div>
                 <div class="modal-body">
-                    <label>Name</label>
-                    <input type="text">
-                    <label>Purchase Date</label>
-                    <input type="text">
-                    <label>Expiration Date</label>
-                    <input type="text">
+                    <form class="new-ingredients">
+                        <input type="submit" id="submit-new-ingredients" class="hidden">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Purchase Date</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Expiration Date</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Meal Type</label>
+                            <select class="form-control">
+                                <?php
+                                $mealTypes = explode(",", substr(pg_fetch_assoc(pg_query("SELECT enum_range(NULL::meal)"))["enum_range"], 1, -1));
+                                foreach ($mealTypes as $mealType) {
+                                    echo "<option>$mealType</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary">Add</button>
+                    <label for="submit-new-ingredients" class="btn btn-primary">Add</label>
                 </div>
             </div>
         </div>
@@ -224,7 +246,7 @@ if (!isset($_SESSION["username"])) { ?>
 
     <div class="column">
         <div class="title">Current Ingredients</div>
-        <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">Launch demo modal</button>
+        <button id="newIngredientsModal" type="button" class="btn btn-primary" data-toggle="modal" data-target="#new-ingredients">Add</button>
         <table id="ingredients">
             <thead>
                 <tr>
@@ -238,8 +260,7 @@ if (!isset($_SESSION["username"])) { ?>
                     $days = $info["remain"];
                     $location = $info["location"];
                     $purchase = $info["purchase"];
-                    echo "<tr><td><div data-toggle='tooltip' data-placement='right' title='Located in $location'>$ingredient</div></td>"
-                        ."<td class='remaining'>$days</td></tr>";
+                    echo "<tr><td><div data-toggle='tooltip' data-placement='right' title='Located in $location'>$ingredient</div></td><td class='remaining'>$days</td></tr>";
                 }
                 ?>
             </tbody>
@@ -307,7 +328,7 @@ if (!isset($_SESSION["username"])) { ?>
     <div class="border"></div>
     <div class="column">
         <div class="title">Recipe</div>
-        <button id="add-recipe">Add new</button>
+        <button id="newRecipeModal" type="button" class="btn btn-primary" data-toggle="modal" data-target="#new-recipe">Add New Recipe</button>
         <div id="recipes">
         <?php
         foreach ($recipes as $name => $info) {

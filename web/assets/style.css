@@ -1,9 +1,8 @@
-html {
+html, body {
   height: 100%; }
 
 body {
-  font-size: 16px;
-  height: 100%; }
+  font-size: 16px; }
 
 /* LOGIN PAGE */
 form.login, form.create {
@@ -15,11 +14,30 @@ form.login {
   padding-top: 20px; }
 
 /* MAIN PAGE */
+#loggedin {
+  position: fixed; }
+
+form#logout {
+  position: fixed;
+  top: 22px; }
+
+button#newIngredientsModal {
+  position: absolute; }
+
+button#newRecipeModal {
+  position: absolute; }
+
+.recipe-ingredient, .recipe-instruction {
+  display: inline; }
+
+form.new-ingredients .form-group {
+  display: inline-block; }
+
 .column {
   float: left;
   width: 33%;
   height: 97%;
-  overflow: scroll;
+  overflow-y: scroll;
   vertical-align: top;
   padding: 0 1%;
   line-height: 1.3; }
@@ -81,9 +99,5 @@ th {
 
 .no {
   color: red; }
-
-/* New Recipe */
-.recipe-ingredient, .recipe-instruction {
-  display: inline; }
 
 /*# sourceMappingURL=style.css.map */

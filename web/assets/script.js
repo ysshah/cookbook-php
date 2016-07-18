@@ -49,39 +49,47 @@ $(document).ready(function(){
         }
     });
 
-    $("button#recipe-save").click(function() {
-        var ingredients = [], instructions = [];
-        var ingrInputs = $("input.recipe-ingredient");
-        var instInputs = $("input.recipe-instruction");
-        for (var i = 0; i < ingrInputs.length; i++) {
-            if (ingrInputs[i].value) {
-                ingredients.push(ingrInputs[i].value);
-            }
-        }
-        for (var i = 0; i < instInputs.length; i++) {
-            if (instInputs[i].value) {
-                instructions.push(instInputs[i].value);
-            }
-        }
+    $("form.new-recipe").submit(function(e) {
+        e.preventDefault();
 
-        $.ajax({
-            type: "POST",
-            url: "ajax/functions.php",
-            data: {
-                action : 'add_recipe',
-                name : $("input#recipe-name").val(),
-                ingrArray : ingredients,
-                instArray : instructions
-            },
-            success: function(msg) {
-                console.log(msg);
-                if (msg == 0) {
-                    alert('added');
-                } else {
-                    alert('recipe name taken');
+        var recipeName = $("input#recipe-name").val();
+        if (recipeName) {
+            var ingredients = [], instructions = [];
+            var ingrInputs = $("input.recipe-ingredient");
+            var instInputs = $("input.recipe-instruction");
+            for (var i = 0; i < ingrInputs.length; i++) {
+                if (ingrInputs[i].value) {
+                    ingredients.push(ingrInputs[i].value);
                 }
             }
-        });
+            for (var i = 0; i < instInputs.length; i++) {
+                if (instInputs[i].value) {
+                    instructions.push(instInputs[i].value);
+                }
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "ajax/functions.php",
+                data: {
+                    action : 'new-recipe',
+                    name : recipeName,
+                    ingrArray : ingredients,
+                    instArray : instructions
+                },
+                success: function(msg) {
+                    console.log(msg);
+                    if (msg == 0) {
+                        alert('Success! New recipe added.');
+                        $("#new-recipe").modal("hide");
+                    } else {
+                        alert('Error: Recipe name taken.');
+                    }
+                }
+            });
+        } else {
+            alert("Error: No recipe name given.");
+        }
     });
 
     $("form.login").submit(function(e) {
@@ -108,8 +116,6 @@ $(document).ready(function(){
         });
     });
 
-//    $("form.create").validate();
-
     $("form.create").submit(function(e) {
         e.preventDefault();
 
@@ -120,7 +126,7 @@ $(document).ready(function(){
             type: "POST",
             url: "ajax/functions.php",
             data: {
-                action : 'create_account',
+                action : 'create-account',
                 username : un,
                 password : pw
             },
