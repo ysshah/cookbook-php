@@ -93,14 +93,21 @@ if (!isset($_SESSION["username"])) { ?>
             "purchase" => $ingredient["purchase"]);
     }
 
+    // $recipes = array();
+    // $result = pg_query("SELECT * FROM recipe_ingredients WHERE user_id = '$user_id'");
+    // while ($recipe = pg_fetch_assoc($result)) {
+    //     # code...
+    // }
+
     function generateRecipeHTMLs($recipe, $num) {
         global $ingredients, $user_id;
 
         $name = $recipe["name"];
+        $id = $recipe["id"];
         $remain = $ingrHTML = $instHTML = "";
         $able = "yes";
 
-        $result = pg_query("SELECT * FROM recipe_ingredients WHERE recipe_id = ".$recipe["id"]." AND user_id = '$user_id'");
+        $result = pg_query("SELECT * FROM recipe_ingredients WHERE recipe_id = $id AND user_id = $user_id");
         if (pg_num_rows($result)) {
             $ingrHTML .= "<table class='ingredients'><thead><tr><th>Ingredients</th>"
                 ."<th class='remaining'>Days remaining</th></tr></thead><tbody>";
@@ -134,7 +141,7 @@ if (!isset($_SESSION["username"])) { ?>
             $remain = "";
         }
 
-        $result = pg_query("SELECT instruction, number FROM recipe_instructions WHERE recipe_id = ".$recipe["id"]." AND user_id = '$user_id' ORDER BY number");
+        $result = pg_query("SELECT instruction, number FROM recipe_instructions WHERE recipe_id = $id AND user_id = $user_id ORDER BY number");
         if (pg_num_rows($result)) {
             $instHTML = "<div class='instr-title'>Instructions</div>"
                 ."<ol class='instructions'>";
@@ -144,7 +151,7 @@ if (!isset($_SESSION["username"])) { ?>
             $instHTML .= "</ol>";
         }
 
-        $recipeHTML = "<div id='$num' class='recipe'><div class='name'>$name</div>$ingrHTML$instHTML</div>";
+        $recipeHTML = "<div id='$num' class='recipe'><div class='name'>$name</div>$ingrHTML$instHTML<button class='edit-recipe' id='$id'>Edit</button></div>";
         $itemHTML = "<tr class='item $able' id='$num'><td>$name</td><td class='remaining'>$remain</td></tr>";
         return array($recipe["mealtype"], $itemHTML, $recipeHTML);
     }
@@ -180,14 +187,25 @@ if (!isset($_SESSION["username"])) { ?>
                             <input class="form-control" type="text" id="recipe-name" placeholder="Required" required>
                         </div>
                         <div class="form-group">
+                            <label class="control-label">Meal Type</label>
+                            <select class="form-control">
+                                <?php
+                                $mealTypes = explode(",", substr(pg_fetch_assoc(pg_query("SELECT enum_range(NULL::meal)"))["enum_range"], 1, -1));
+                                foreach ($mealTypes as $mealType) {
+                                    echo "<option>$mealType</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label>Ingredients</label>
-                            <ul>
+                            <ul class="new-recipe">
                                 <li><input class="form-control recipe-ingredient last" type="text"></li>
                             </ul>
                         </div>
                         <div class="form-group">
                             <label>Instructions</label>
-                            <ol>
+                            <ol class="new-recipe">
                                 <li><input class="form-control recipe-instruction last" type="text"></li>
                             </ol>
                         </div>
@@ -195,7 +213,7 @@ if (!isset($_SESSION["username"])) { ?>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <label for="submit-new-recipe" class="btn btn-primary">Save</label>
+                    <label for="submit-new-recipe" class="btn btn-primary submit">Add</label>
                 </div>
             </div>
         </div>
@@ -211,29 +229,22 @@ if (!isset($_SESSION["username"])) { ?>
                 <div class="modal-body">
                     <form class="new-ingredients">
                         <input type="submit" id="submit-new-ingredients" class="hidden">
-                        <div class="form-group">
-                            <label>Name</label>
-                            <input type="text" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Purchase Date</label>
-                            <input type="date" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>Expiration Date</label>
-                            <input type="date" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>Meal Type</label>
-                            <select class="form-control">
-                                <?php
-                                $mealTypes = explode(",", substr(pg_fetch_assoc(pg_query("SELECT enum_range(NULL::meal)"))["enum_range"], 1, -1));
-                                foreach ($mealTypes as $mealType) {
-                                    echo "<option>$mealType</option>";
-                                }
-                                ?>
-                            </select>
-                        </div>
+                        <ul class="new-ingredients">
+                            <li>
+                                <div class="form-group">
+                                    <label>Name</label>
+                                    <input type="text" class="form-control new-ingredient last" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Purchase Date</label>
+                                    <input type="date" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Expiration Date</label>
+                                    <input type="date" class="form-control">
+                                </div>
+                            </li>
+                        </ul>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -259,9 +270,14 @@ if (!isset($_SESSION["username"])) { ?>
                 foreach ($ingredients as $ingredient => $info) {
                     $days = $info["remain"];
                     $location = $info["location"];
-                    $purchase = $info["purchase"];
-                    echo "<tr><td><div data-toggle='tooltip' data-placement='right' title='Located in $location'>$ingredient</div></td><td class='remaining'>$days</td></tr>";
-                }
+                    $purchase = $info["purchase"]; ?>
+                    <tr>
+                        <td>
+                            <div data-toggle='tooltip' data-placement='right' title='Located in <?php echo $location; ?>'><?php echo $ingredient; ?></div>
+                        </td>
+                        <td class='remaining'><?php echo $days; ?></td>
+                    </tr>
+                <?php }
                 ?>
             </tbody>
         </table>

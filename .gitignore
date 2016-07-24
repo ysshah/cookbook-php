@@ -1,5 +1,6 @@
 composer.lock
 web/test.php
 web/assets/*.map
+web/assets/config.rb
 web/includes/db.php
 vendor/

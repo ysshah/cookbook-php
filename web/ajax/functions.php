@@ -78,6 +78,38 @@ if (isset($_POST["action"])) {
             echo 1; //Incorrect username and/or password
         }
     }
+
+} elseif (isset($_GET["action"])) {
+    include_once(dirname(__DIR__)."/includes/db.php");
+    if (isset($_SESSION["username"])) {
+        $user_id = $_SESSION["user_id"];
+        if ($_GET["action"] == "edit-recipe") {
+            $id = $_GET["id"];
+            $result = pg_fetch_assoc(pg_query("SELECT name, mealtype FROM recipes WHERE user_id = $user_id AND id = $id"));
+            $name = $result["name"];
+            $mealtype = $result["mealtype"];
+
+            $ingredients = array();
+            $result = pg_query("SELECT * FROM recipe_ingredients WHERE user_id = $user_id AND recipe_id = $id");
+            while ($row = pg_fetch_assoc($result)) {
+                array_push($ingredients, $row["name"]);
+            }
+
+            $instructions = array();
+            $result = pg_query("SELECT * FROM recipe_ingredients WHERE user_id = $user_id AND recipe_id = $id");
+            while ($row = pg_fetch_assoc($result)) {
+                array_push($instructions, $row["instruction"]);
+            }
+
+            $data = array(
+                "name" => $name,
+                "mealtype" => $mealtype,
+                'ingredients' => $ingredients,
+                'instructions' => $instructions
+            );
+            echo json_encode($data);
+        }
+    }
 } else {
     echo var_dump($_POST);
 }
