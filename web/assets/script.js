@@ -47,7 +47,7 @@ $(document).ready(function(){
     });
 
 
-    $('form.new-recipe').submit(function(e) {
+    $('div.modal-body').on('submit', 'form.new-recipe', function(e) {
         e.preventDefault();
 
         var recipeName = $('input#recipe-name').val();
@@ -91,6 +91,31 @@ $(document).ready(function(){
     });
 
 
+    $('div.modal-body').on('submit', 'form.edit-recipe', function(e) {
+        e.preventDefault();
+
+        // $.ajax({
+        //     type: 'POST',
+        //     url: 'ajax/functions.php',
+        //     data: {
+        //         action : 'edit-recipe',
+        //         name : recipeName,
+        //         ingrArray : ingredients,
+        //         instArray : instructions
+        //     },
+        //     success: function(msg) {
+        //         console.log(msg);
+        //         if (msg == 0) {
+        //             alert('Success! New recipe added.');
+        //             $('#new-recipe').modal('hide');
+        //         } else {
+        //             alert('Error: Recipe name taken.');
+        //         }
+        //     }
+        // });
+    });
+
+
     $('ul.new-ingredients').on('keypress', 'li div input.new-ingredient.last', function(e) {
         if (this.value) {
             $(this).removeClass('last');
@@ -117,14 +142,28 @@ $(document).ready(function(){
             type: 'GET',
             url: 'ajax/functions.php',
             data: {
-                action : 'edit-recipe',
+                action : 'get-recipe',
                 id : this.id
             },
             success: function(data) {
                 data = JSON.parse(data);
+                $('#new-recipe').find('form').removeClass('new-recipe').addClass('edit-recipe');
                 $('#new-recipe').find('.modal-title').html('Edit Recipe');
                 $('#new-recipe').find('label.submit').html('Save');
                 $('#new-recipe').find('input#recipe-name').val(data.name);
+
+                $('#new-recipe').find('ul.new-recipe').empty();
+                $('#new-recipe').find('ol.new-recipe').empty();
+
+                for (var i = 0; i < data.ingredients.length; i++) {
+                    var ingredient = $('<input class="form-control recipe-ingredient">').val(data.ingredients[i]);
+                    $('#new-recipe').find('ul.new-recipe').append($('<li></li>').html(ingredient));
+                }
+                for (var i = 0; i < data.instructions.length; i++) {
+                    var instruction = $('<input class="form-control recipe-instruction">').val(data.instructions[i]);
+                    $('#new-recipe').find('ol.new-recipe').append($('<li></li>').html(instruction));
+                }
+
                 $('#new-recipe').modal('show');
             }
         });

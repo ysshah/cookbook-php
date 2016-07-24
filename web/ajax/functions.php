@@ -83,7 +83,7 @@ if (isset($_POST["action"])) {
     include_once(dirname(__DIR__)."/includes/db.php");
     if (isset($_SESSION["username"])) {
         $user_id = $_SESSION["user_id"];
-        if ($_GET["action"] == "edit-recipe") {
+        if ($_GET["action"] == "get-recipe") {
             $id = $_GET["id"];
             $result = pg_fetch_assoc(pg_query("SELECT name, mealtype FROM recipes WHERE user_id = $user_id AND id = $id"));
             $name = $result["name"];
@@ -96,7 +96,7 @@ if (isset($_POST["action"])) {
             }
 
             $instructions = array();
-            $result = pg_query("SELECT * FROM recipe_ingredients WHERE user_id = $user_id AND recipe_id = $id");
+            $result = pg_query("SELECT * FROM recipe_instructions WHERE user_id = $user_id AND recipe_id = $id ORDER BY number");
             while ($row = pg_fetch_assoc($result)) {
                 array_push($instructions, $row["instruction"]);
             }
@@ -108,6 +108,8 @@ if (isset($_POST["action"])) {
                 'instructions' => $instructions
             );
             echo json_encode($data);
+        } elseif ($_GET["action"] == "edit-ingredient") {
+            $result = pg_fetch_assoc(pg_query("SELECT * FROM ingredients WHERE user_id = $user_id AND id = $id"));
         }
     }
 } else {
