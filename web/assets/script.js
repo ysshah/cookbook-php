@@ -158,9 +158,9 @@ $(document).ready(function(){
             },
             success: function(msg) {
                 if (msg == 1) {
-                    thisModal.modal('hide');
+                    location.reload();
                 } else {
-                    alert('Error: Unable to delete.');
+                    alert(msg);
                 }
             }
         });
@@ -182,16 +182,16 @@ $(document).ready(function(){
 
                 editModal.find('input.name').val(data.name);
                 editModal.find('button.delete').attr('id', data.id);
-                editModal.find('ul.new-recipe').empty();
-                editModal.find('ol.new-recipe').empty();
+                editModal.find('ul.edit-recipe').empty();
+                editModal.find('ol.edit-recipe').empty();
 
                 for (var i = 0; i < data.ingredients.length; i++) {
                     var ingredient = $('<input class="form-control recipe-ingredient">').val(data.ingredients[i]);
-                    editModal.find('ul.new-recipe').append($('<li></li>').html(ingredient));
+                    editModal.find('ul.edit-recipe').append($('<li></li>').html(ingredient));
                 }
                 for (var i = 0; i < data.instructions.length; i++) {
                     var instruction = $('<input class="form-control recipe-instruction">').val(data.instructions[i]);
-                    editModal.find('ol.new-recipe').append($('<li></li>').html(instruction));
+                    editModal.find('ol.edit-recipe').append($('<li></li>').html(instruction));
                 }
 
                 $('#edit-recipe').modal('show');
@@ -199,12 +199,41 @@ $(document).ready(function(){
         });
     });
 
+
+    $('form.edit-ingredient').submit(function(e) {
+        e.preventDefault();
+        var ingrName = $(this).find('input.name').val();
+        var purchaseDate = $(this).find('input.purchase').val();
+        var expirationDate = $(this).find('input.expire').val();
+
+        $.ajax({
+            type: 'POST',
+            url: 'ajax/functions.php',
+            data: {
+                action : 'edit-ingredient',
+                id : this.id,
+                name : ingrName,
+                purchase : purchaseDate,
+                expiration : expirationDate
+            },
+            success: function(msg) {
+                if (msg == 1) {
+                    location.reload();
+                } else {
+                    alert(msg);
+                }
+            }
+        });
+    });
+
+
     $('tr.ingredient').on('click', function() {
         var editModal = $('#edit-ingredient');
         editModal.find('input.name').val($(this).attr('data-name'));
         editModal.find('input.purchase').val($(this).attr('data-purchase'));
         editModal.find('input.expire').val($(this).attr('data-expire'));
         editModal.find('button.delete').attr('id', $(this).attr('id'));
+        editModal.find('form').attr('id', $(this).attr('id'));
         editModal.modal('show');
     });
 
@@ -227,24 +256,26 @@ $(document).ready(function(){
         $(this).addClass('selected');
     });
 
-    /* Select the topmost recipe on page load. */
-//    $('.items').find('tr')[1].click();
-
     /* Advance to next or previous recipe on arrow key press.
      * <- = 37, ^ = 38, -> = 39, v = 40 */
-//    $('html').keydown(function(e) {
-//        if (37 <= e.which && e.which <= 40) {
-//            e.preventDefault();
-//            if (e.which <= 38) {
-//                $($('.items').find('.selected')[0]).prev().click();
-//            } else {
-//                $($('.items').find('.selected')[0]).next().click();
-//            };
-//        }
-//    });
-
-//    $('button#add-recipe').click(function() {
-//        alert('hello');
-//    });
+    $('html').keydown(function(e) {
+        if (37 <= e.which && e.which <= 40) {
+            e.preventDefault();
+            var selected = $('.selected');
+            if (e.which <= 38) {
+                if (selected.prev().length) {
+                    selected.prev().click();
+                } else {
+                    selected.parent().parent().prev().find('tr').last().click();
+                }
+            } else {
+                if (selected.next().length) {
+                    selected.next().click();
+                } else {
+                    selected.parent().parent().next().find('tr').eq(1).click();
+                }
+            };
+        }
+    });
 
 });

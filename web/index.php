@@ -7,7 +7,7 @@
         <meta http-equiv="content-type" content="text/html; charset=utf-8">
         <link rel="stylesheet" type="text/css" href="assets/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="assets/style.css">
-        <script src="assets/jquery-1.11.3.min.js"></script>
+        <script src="assets/jquery-1.12.4.min.js"></script>
         <script src="assets/jquery.validate.min.js"></script>
         <script src="assets/jquery.tablesorter.js"></script>
         <script src="assets/bootstrap.min.js"></script>
@@ -246,15 +246,11 @@ if (!isset($_SESSION["username"])) { ?>
                         </div>
                         <div class="form-group">
                             <label>Ingredients</label>
-                            <ul class="edit-recipe">
-                                <li><input class="form-control recipe-ingredient last" type="text"></li>
-                            </ul>
+                            <ul class="edit-recipe"></ul>
                         </div>
                         <div class="form-group">
                             <label>Instructions</label>
-                            <ol class="edit-recipe">
-                                <li><input class="form-control recipe-instruction last" type="text"></li>
-                            </ol>
+                            <ol class="edit-recipe"></ol>
                         </div>
                     </form>
                 </div>
@@ -396,7 +392,6 @@ if (!isset($_SESSION["username"])) { ?>
                 ?>
                 </tbody>
             </table>
-            <br>
             <table id="dinner-items" class="items">
                 <thead>
                     <tr>
@@ -414,7 +409,6 @@ if (!isset($_SESSION["username"])) { ?>
                 ?>
                 </tbody>
             </table>
-            <br>
             <table id="snack-items" class="items">
                 <thead>
                     <tr>

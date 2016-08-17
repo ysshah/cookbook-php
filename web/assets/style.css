@@ -67,6 +67,11 @@ th {
   th:focus {
     outline: none; }
 
+tr.ingredient:hover {
+  cursor: pointer; }
+  tr.ingredient:hover td div {
+    text-decoration: underline; }
+
 .remaining {
   text-align: right; }
 

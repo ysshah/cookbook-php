@@ -46,10 +46,28 @@ if (isset($_POST["action"])) {
         } elseif ($_POST["action"] == "edit-recipe") {
 
         } elseif ($_POST["action"] == "edit-ingredient") {
+            $id = $_POST["id"];
+            $updates = "ingredient='".$_POST["name"]."'";
+            if ($_POST["purchase"] === "") {
+                $updates .= ",purchase=NULL";
+            } else {
+                $updates .= ",purchase='".$_POST["purchase"]."'";
+            }
+            if ($_POST["expiration"] === "") {
+                $updates .= ",expiration=NULL";
+            } else {
+                $updates .= ",expiration='".$_POST["expiration"]."'";
+            }
+            $result = pg_query("UPDATE ingredients SET $updates WHERE id = $id AND user_id = $user_id");
+            echo pg_affected_rows($result);
 
         } elseif ($_POST["action"] == "delete") {
             $id = $_POST["id"];
             $table = $_POST["type"];
+            if ($table == "recipes") {
+                pg_query("DELETE FROM recipe_ingredients WHERE recipe_id = $id AND user_id = $user_id");
+                pg_query("DELETE FROM recipe_instructions WHERE recipe_id = $id AND user_id = $user_id");
+            }
             $result = pg_query("DELETE FROM $table WHERE id = $id AND user_id = $user_id");
             echo pg_affected_rows($result);
         }

@@ -91,6 +91,12 @@ th {
         outline: none;
     }
 }
+tr.ingredient:hover {
+    cursor: pointer;
+    td div {
+        text-decoration: underline;
+    }
+}
 .remaining {
     text-align: right;
 }
