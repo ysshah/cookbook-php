@@ -1,7 +1,7 @@
 <?php include_once("includes/db.php"); ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <title>Yash's Cookbook</title>
         <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -23,30 +23,34 @@ if (isset($_POST["action"]) && $_POST["action"] == "Log Out") {
 }
 if (!isset($_SESSION["username"])) { ?>
 
-    <form class="login" action="javascript:void(0);">
-        <h4>Log In</h4>
-        <div class="form-group">
-            <input class="form-control username login" type="text" name="username" placeholder="Username or Email" required>
-        </div>
-        <div class="form-group">
-            <input class="form-control password login" type="password" name="password" placeholder="Password" required>
-        </div>
-        <button type="submit" class="btn btn-default login">Log In</button>
-    </form>
+    <div class="container">
+        <form class="login" action="javascript:void(0);">
+            <h4>Log In</h4>
+            <div class="form-group">
+                <input class="form-control username login" type="text" name="username" placeholder="Username or Email" required>
+            </div>
+            <div class="form-group">
+                <input class="form-control password login" type="password" name="password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="btn btn-default login">Log In</button>
+        </form>
+    </div>
 
-    <form class="create" action="javascript:void(0);">
-        <h4>Create Account</h4>
-        <div class="form-group">
-            <input class="form-control username create" type="text" name="username" placeholder="Username" required>
-        </div>
-        <div class="form-group">
-            <input class="form-control password create" type="password" name="password" placeholder="Password" required>
-        </div>
-        <div class="form-group">
-            <input class="form-control email create" type="email" name="email" placeholder="Email" required>
-        </div>
-        <button type="submit" class="btn btn-default create">Create Account</button>
-    </form>
+    <div class="container">
+        <form class="create" action="javascript:void(0);">
+            <h4>Create Account</h4>
+            <div class="form-group">
+                <input class="form-control username create" type="text" name="username" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+                <input class="form-control password create" type="password" name="password" placeholder="Password" required>
+            </div>
+            <div class="form-group">
+                <input class="form-control email create" type="email" name="email" placeholder="Email" required>
+            </div>
+            <button type="submit" class="btn btn-default create">Create Account</button>
+        </form>
+    </div>
 
 <?php } else {
 
@@ -90,14 +94,10 @@ if (!isset($_SESSION["username"])) { ?>
             "remain" => $remain,
             "expiration" => $ingredient["expiration"],
             "location" => $ingredient["location"],
-            "purchase" => $ingredient["purchase"]);
+            "purchase" => $ingredient["purchase"],
+            "id" => $ingredient["id"]
+        );
     }
-
-    // $recipes = array();
-    // $result = pg_query("SELECT * FROM recipe_ingredients WHERE user_id = '$user_id'");
-    // while ($recipe = pg_fetch_assoc($result)) {
-    //     # code...
-    // }
 
     function generateRecipeHTMLs($recipe, $num) {
         global $ingredients, $user_id;
@@ -151,7 +151,7 @@ if (!isset($_SESSION["username"])) { ?>
             $instHTML .= "</ol>";
         }
 
-        $recipeHTML = "<div id='$num' class='recipe'><div class='name'>$name</div>$ingrHTML$instHTML<button class='edit-recipe' id='$id'>Edit</button></div>";
+        $recipeHTML = "<div id='$num' class='recipe'><div class='name'>$name</div>$ingrHTML$instHTML<button class='btn btn-default edit-recipe' id='$id'>Edit</button></div>";
         $itemHTML = "<tr class='item $able' id='$num'><td>$name</td><td class='remaining'>$remain</td></tr>";
         return array($recipe["mealtype"], $itemHTML, $recipeHTML);
     }
@@ -219,6 +219,54 @@ if (!isset($_SESSION["username"])) { ?>
         </div>
     </div>
 
+    <div class="modal fade" id="edit-recipe" tabindex="-1" role="dialog" aria-labelledby="edit-recipe-label">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="edit-recipe-label">Edit Recipe</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="edit-recipe">
+                        <input type="submit" id="submit-edit-recipe" class="hidden">
+                        <div class="form-group">
+                            <label class="control-label" for="recipe-name">Recipe Name</label>
+                            <input class="form-control name" type="text" placeholder="Required" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Meal Type</label>
+                            <select class="form-control">
+                                <?php
+                                $mealTypes = explode(",", substr(pg_fetch_assoc(pg_query("SELECT enum_range(NULL::meal)"))["enum_range"], 1, -1));
+                                foreach ($mealTypes as $mealType) {
+                                    echo "<option>$mealType</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Ingredients</label>
+                            <ul class="edit-recipe">
+                                <li><input class="form-control recipe-ingredient last" type="text"></li>
+                            </ul>
+                        </div>
+                        <div class="form-group">
+                            <label>Instructions</label>
+                            <ol class="edit-recipe">
+                                <li><input class="form-control recipe-instruction last" type="text"></li>
+                            </ol>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger pull-left delete recipe">Delete</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <label for="submit-edit-recipe" class="btn btn-primary submit">Save</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade bs-example-modal-lg" id="new-ingredients" tabindex="-1" role="dialog" aria-labelledby="new-ingredients-label">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -255,6 +303,39 @@ if (!isset($_SESSION["username"])) { ?>
         </div>
     </div>
 
+    <div class="modal fade bs-example-modal-lg" id="edit-ingredient" tabindex="-1" role="dialog" aria-labelledby="edit-ingredient-label">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="edit-ingredient-label">Edit Ingredient</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="edit-ingredient">
+                        <input type="submit" id="submit-edit-ingredient" class="hidden">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" class="form-control name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Purchase Date</label>
+                            <input type="date" class="form-control purchase">
+                        </div>
+                        <div class="form-group">
+                            <label>Expiration Date</label>
+                            <input type="date" class="form-control expire">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger pull-left delete ingredient">Delete</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <label for="submit-edit-ingredient" class="btn btn-primary">Save</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="column">
         <div class="title">Current Ingredients</div>
         <button id="newIngredientsModal" type="button" class="btn btn-primary" data-toggle="modal" data-target="#new-ingredients">Add</button>
@@ -270,8 +351,20 @@ if (!isset($_SESSION["username"])) { ?>
                 foreach ($ingredients as $ingredient => $info) {
                     $days = $info["remain"];
                     $location = $info["location"];
-                    $purchase = $info["purchase"]; ?>
-                    <tr>
+
+                    $id = "id='".$info["id"]."'";
+                    $dataName = "data-name='$ingredient'";
+                    $dataPurchase = "";
+                    $dataExpire = "";
+                    if ($info["purchase"]) {
+                        $dataPurchase = "data-purchase='".$info["purchase"]."'";
+                    }
+                    if ($info["expiration"]) {
+                        $dataExpire = "data-expire='".$info["expiration"]."'";
+                    }
+                    $data = "$id $dataName $dataPurchase $dataExpire";
+                    ?>
+                    <tr class="ingredient" <?php echo $data; ?>>
                         <td>
                             <div data-toggle='tooltip' data-placement='right' title='Located in <?php echo $location; ?>'><?php echo $ingredient; ?></div>
                         </td>

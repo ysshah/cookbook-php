@@ -137,6 +137,36 @@ $(document).ready(function(){
     });
 
 
+    $('button.delete').on('click', function() {
+
+        var deleteType, thisModal;
+        if ($(this).hasClass('ingredient')) {
+            deleteType = 'ingredients';
+            thisModal = $('#edit-ingredient');
+        } else {
+            deleteType = 'recipes';
+            thisModal = $('#edit-recipe');
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: 'ajax/functions.php',
+            data: {
+                action: 'delete',
+                type: deleteType,
+                id: this.id
+            },
+            success: function(msg) {
+                if (msg == 1) {
+                    thisModal.modal('hide');
+                } else {
+                    alert('Error: Unable to delete.');
+                }
+            }
+        });
+    });
+
+
     $('button.edit-recipe').on('click', function() {
         $.ajax({
             type: 'GET',
@@ -147,26 +177,35 @@ $(document).ready(function(){
             },
             success: function(data) {
                 data = JSON.parse(data);
-                $('#new-recipe').find('form').removeClass('new-recipe').addClass('edit-recipe');
-                $('#new-recipe').find('.modal-title').html('Edit Recipe');
-                $('#new-recipe').find('label.submit').html('Save');
-                $('#new-recipe').find('input#recipe-name').val(data.name);
 
-                $('#new-recipe').find('ul.new-recipe').empty();
-                $('#new-recipe').find('ol.new-recipe').empty();
+                var editModal = $('#edit-recipe');
+
+                editModal.find('input.name').val(data.name);
+                editModal.find('button.delete').attr('id', data.id);
+                editModal.find('ul.new-recipe').empty();
+                editModal.find('ol.new-recipe').empty();
 
                 for (var i = 0; i < data.ingredients.length; i++) {
                     var ingredient = $('<input class="form-control recipe-ingredient">').val(data.ingredients[i]);
-                    $('#new-recipe').find('ul.new-recipe').append($('<li></li>').html(ingredient));
+                    editModal.find('ul.new-recipe').append($('<li></li>').html(ingredient));
                 }
                 for (var i = 0; i < data.instructions.length; i++) {
                     var instruction = $('<input class="form-control recipe-instruction">').val(data.instructions[i]);
-                    $('#new-recipe').find('ol.new-recipe').append($('<li></li>').html(instruction));
+                    editModal.find('ol.new-recipe').append($('<li></li>').html(instruction));
                 }
 
-                $('#new-recipe').modal('show');
+                $('#edit-recipe').modal('show');
             }
         });
+    });
+
+    $('tr.ingredient').on('click', function() {
+        var editModal = $('#edit-ingredient');
+        editModal.find('input.name').val($(this).attr('data-name'));
+        editModal.find('input.purchase').val($(this).attr('data-purchase'));
+        editModal.find('input.expire').val($(this).attr('data-expire'));
+        editModal.find('button.delete').attr('id', $(this).attr('id'));
+        editModal.modal('show');
     });
 
 
@@ -182,9 +221,8 @@ $(document).ready(function(){
 
     /* Clicking on a recipe moves the recipe view to that recipe. */
     $('tr.item').on('click', function() {
-        var scroll = $('#recipes').find('#'+this.id)[0]
-            .offsetTop - $('.column .title').height();
-        $('#recipes').scrollTop(scroll);
+        $($('div.recipe')[this.id]).show().siblings().hide();
+
         $('.items tbody').children().removeClass('selected');
         $(this).addClass('selected');
     });

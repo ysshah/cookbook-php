@@ -43,6 +43,15 @@ if (isset($_POST["action"])) {
 
         } elseif ($_POST["action"] == "new-ingredients") {
             # code...
+        } elseif ($_POST["action"] == "edit-recipe") {
+
+        } elseif ($_POST["action"] == "edit-ingredient") {
+
+        } elseif ($_POST["action"] == "delete") {
+            $id = $_POST["id"];
+            $table = $_POST["type"];
+            $result = pg_query("DELETE FROM $table WHERE id = $id AND user_id = $user_id");
+            echo pg_affected_rows($result);
         }
 
     } elseif ($_POST["action"] == "create-account") {
@@ -102,10 +111,11 @@ if (isset($_POST["action"])) {
             }
 
             $data = array(
+                "id" => $id,
                 "name" => $name,
                 "mealtype" => $mealtype,
-                'ingredients' => $ingredients,
-                'instructions' => $instructions
+                "ingredients" => $ingredients,
+                "instructions" => $instructions
             );
             echo json_encode($data);
         } elseif ($_GET["action"] == "edit-ingredient") {
