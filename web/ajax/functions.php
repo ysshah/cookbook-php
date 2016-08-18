@@ -11,12 +11,13 @@ if (isset($_POST["action"])) {
                 return;
             }
             $name = pg_escape_string($_POST["name"]);
+            $mealType = pg_escape_string($_POST["mealType"]);
             $exists = pg_num_rows(pg_query(
                 "SELECT 1 FROM recipes WHERE name = '$name' AND user_id = '$user_id' LIMIT 1"));
             if ($exists) {
                 echo 1; //Error: Recipe exists
             } else {
-                pg_query("INSERT INTO recipes (name, user_id) VALUES ('$name', '$user_id')");
+                pg_query("INSERT INTO recipes (name, mealtype, user_id) VALUES ('$name', '$mealType', '$user_id')");
                 $id = pg_fetch_assoc(pg_query(
                     "SELECT id FROM recipes WHERE name = '$name' and user_id = '$user_id'"))["id"];
                 if (isset($_POST["ingrArray"])) {
@@ -41,8 +42,24 @@ if (isset($_POST["action"])) {
                 echo 0; //Successfully added as id# $id
             }
 
-        } elseif ($_POST["action"] == "new-ingredients") {
-            # code...
+        } elseif ($_POST["action"] == "new-ingredient") {
+            if (!isset($_POST["name"]) or $_POST["name"] === "") {
+                echo -1; //Error: Recipe name not set
+                return;
+            }
+            $name = pg_escape_string($_POST["name"]);
+            $exists = pg_num_rows(pg_query(
+                "SELECT 1 FROM ingredients WHERE ingredient = '$name' AND user_id = '$user_id' LIMIT 1"));
+            if ($exists) {
+                echo 1; //Error: Ingredient exists
+            } else {
+                $location = $_POST["location"];
+                $purchase = ($_POST["purchase"] === "") ? "NULL" : "'".$_POST["purchase"]."'";
+                $expiration = ($_POST["expiration"] === "") ? "NULL" : "'".$_POST["expiration"]."'";
+                pg_query("INSERT INTO ingredients (ingredient, location, purchase, expiration, user_id) VALUES ('$name', '$location', $purchase, $expiration, '$user_id')");
+                echo 0;
+            }
+
         } elseif ($_POST["action"] == "edit-recipe") {
 
         } elseif ($_POST["action"] == "edit-ingredient") {

@@ -5,6 +5,7 @@
     <head>
         <title>Yash's Cookbook</title>
         <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width">
         <link rel="stylesheet" type="text/css" href="assets/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="assets/style.css">
         <script src="assets/jquery-1.12.4.min.js"></script>
@@ -64,13 +65,14 @@ if (!isset($_SESSION["username"])) { ?>
     $result = pg_query("SELECT * FROM lifespans");
     while ($lifespan = pg_fetch_assoc($result)) {
         $lifespans[$lifespan["food"]] = array(
-            "room" => $lifespan["roomtemp"],
-            "pantry" => $lifespan["roomtemp"],
-            "spice cabinet" => $lifespan["roomtemp"],
-            "big fridge" => $lifespan["fridge"],
-            "mini fridge" => $lifespan["fridge"],
-            "big freezer" => $lifespan["freezer"],
-            "mini freezer" => $lifespan["freezer"]);
+            "Room" => $lifespan["roomtemp"],
+            "Pantry" => $lifespan["roomtemp"],
+            "Spice cabinet" => $lifespan["roomtemp"],
+            "Big fridge" => $lifespan["fridge"],
+            "Mini fridge" => $lifespan["fridge"],
+            "Big freezer" => $lifespan["freezer"],
+            "Mini freezer" => $lifespan["freezer"]
+        );
     }
 
     /* Ingredients */
@@ -182,31 +184,29 @@ if (!isset($_SESSION["username"])) { ?>
                 <div class="modal-body">
                     <form class="new-recipe">
                         <input type="submit" id="submit-new-recipe" class="hidden">
+                        <input name="action" value="new-recipe" class="hidden">
                         <div class="form-group">
                             <label class="control-label" for="recipe-name">Recipe Name</label>
-                            <input class="form-control" type="text" id="recipe-name" placeholder="Required" required>
+                            <input name="name" class="form-control" type="text" id="recipe-name" placeholder="Required" required>
                         </div>
                         <div class="form-group">
                             <label class="control-label">Meal Type</label>
-                            <select class="form-control">
-                                <?php
-                                $mealTypes = explode(",", substr(pg_fetch_assoc(pg_query("SELECT enum_range(NULL::meal)"))["enum_range"], 1, -1));
-                                foreach ($mealTypes as $mealType) {
-                                    echo "<option>$mealType</option>";
-                                }
-                                ?>
+                            <select name="mealType" class="form-control">
+                                <option>Breakfast</option>
+                                <option>Lunch / Dinner</option>
+                                <option>Snacks</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label>Ingredients</label>
                             <ul class="new-recipe">
-                                <li><input class="form-control recipe-ingredient last" type="text"></li>
+                                <li><input name="ingrArray[]" class="form-control recipe-ingredient last" type="text"></li>
                             </ul>
                         </div>
                         <div class="form-group">
                             <label>Instructions</label>
                             <ol class="new-recipe">
-                                <li><input class="form-control recipe-instruction last" type="text"></li>
+                                <li><input name="instArray[]" class="form-control recipe-instruction last" type="text"></li>
                             </ol>
                         </div>
                     </form>
@@ -236,12 +236,9 @@ if (!isset($_SESSION["username"])) { ?>
                         <div class="form-group">
                             <label class="control-label">Meal Type</label>
                             <select class="form-control">
-                                <?php
-                                $mealTypes = explode(",", substr(pg_fetch_assoc(pg_query("SELECT enum_range(NULL::meal)"))["enum_range"], 1, -1));
-                                foreach ($mealTypes as $mealType) {
-                                    echo "<option>$mealType</option>";
-                                }
-                                ?>
+                                <option>Breakfast</option>
+                                <option>Lunch / Dinner</option>
+                                <option>Snacks</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -255,7 +252,7 @@ if (!isset($_SESSION["username"])) { ?>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-danger pull-left delete recipe">Delete</button>
+                    <button class="btn btn-danger pull-left delete" data-delete="recipes">Delete</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                     <label for="submit-edit-recipe" class="btn btn-primary submit">Save</label>
                 </div>
@@ -268,27 +265,36 @@ if (!isset($_SESSION["username"])) { ?>
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="new-ingredients-label">Add Ingredient(s)</h4>
+                    <h4 class="modal-title" id="new-ingredients-label">Add Ingredient</h4>
                 </div>
                 <div class="modal-body">
-                    <form class="new-ingredients">
+                    <form class="new-ingredient">
                         <input type="submit" id="submit-new-ingredients" class="hidden">
-                        <ul class="new-ingredients">
-                            <li>
-                                <div class="form-group">
-                                    <label>Name</label>
-                                    <input type="text" class="form-control new-ingredient last" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Purchase Date</label>
-                                    <input type="date" class="form-control">
-                                </div>
-                                <div class="form-group">
-                                    <label>Expiration Date</label>
-                                    <input type="date" class="form-control">
-                                </div>
-                            </li>
-                        </ul>
+                        <input name="action" value="new-ingredient" class="hidden">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input name="name" type="text" class="form-control new-ingredient last" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <select name="location" class="form-control location">
+                                <option>Pantry</option>
+                                <option>Room</option>
+                                <option>Big fridge</option>
+                                <option>Mini fridge</option>
+                                <option>Big freezer</option>
+                                <option>Mini freezer</option>
+                                <option>Spice cabinet</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Purchase Date</label>
+                            <input name="purchase" type="date" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Expiration Date</label>
+                            <input name="expiration" type="date" class="form-control">
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -309,22 +315,36 @@ if (!isset($_SESSION["username"])) { ?>
                 <div class="modal-body">
                     <form class="edit-ingredient">
                         <input type="submit" id="submit-edit-ingredient" class="hidden">
+                        <input name="action" value="edit-ingredient" class="hidden">
+                        <input name="id" class="hidden id">
                         <div class="form-group">
                             <label>Name</label>
-                            <input type="text" class="form-control name" required>
+                            <input name="name" type="text" class="form-control name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <select name="location" class="form-control location">
+                                <option>Pantry</option>
+                                <option>Room</option>
+                                <option>Big fridge</option>
+                                <option>Mini fridge</option>
+                                <option>Big freezer</option>
+                                <option>Mini freezer</option>
+                                <option>Spice cabinet</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>Purchase Date</label>
-                            <input type="date" class="form-control purchase">
+                            <input name="purchase" type="date" class="form-control purchase">
                         </div>
                         <div class="form-group">
                             <label>Expiration Date</label>
-                            <input type="date" class="form-control expire">
+                            <input name="expiration" type="date" class="form-control expiration">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-danger pull-left delete ingredient">Delete</button>
+                    <button class="btn btn-danger pull-left delete" data-delete="ingredients">Delete</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                     <label for="submit-edit-ingredient" class="btn btn-primary">Save</label>
                 </div>
@@ -350,19 +370,20 @@ if (!isset($_SESSION["username"])) { ?>
 
                     $id = "id='".$info["id"]."'";
                     $dataName = "data-name='$ingredient'";
+                    $dataLocation = "data-location='$location'";
                     $dataPurchase = "";
-                    $dataExpire = "";
+                    $dataExpiration = "";
                     if ($info["purchase"]) {
                         $dataPurchase = "data-purchase='".$info["purchase"]."'";
                     }
                     if ($info["expiration"]) {
-                        $dataExpire = "data-expire='".$info["expiration"]."'";
+                        $dataExpiration = "data-expiration='".$info["expiration"]."'";
                     }
-                    $data = "$id $dataName $dataPurchase $dataExpire";
+                    $data = "$id $dataName $dataLocation $dataPurchase $dataExpiration";
                     ?>
                     <tr class="ingredient" <?php echo $data; ?>>
                         <td>
-                            <div data-toggle='tooltip' data-placement='right' title='Located in <?php echo $location; ?>'><?php echo $ingredient; ?></div>
+                            <div><?php echo $ingredient; ?></div>
                         </td>
                         <td class='remaining'><?php echo $days; ?></td>
                     </tr>
@@ -385,7 +406,7 @@ if (!isset($_SESSION["username"])) { ?>
                 <tbody>
                 <?php
                 foreach ($recipes as $name => $info) {
-                    if ($info[0] == "breakfast") {
+                    if ($info[0] == "Breakfast") {
                         echo $info[1];
                     }
                 }
@@ -402,7 +423,7 @@ if (!isset($_SESSION["username"])) { ?>
                 <tbody>
                 <?php
                 foreach ($recipes as $name => $info) {
-                    if ($info[0] == "lunchdinner") {
+                    if ($info[0] == "Lunch / Dinner") {
                         echo $info[1];
                     }
                 }
@@ -419,7 +440,7 @@ if (!isset($_SESSION["username"])) { ?>
                 <tbody>
                 <?php
                 foreach ($recipes as $name => $info) {
-                    if ($info[0] == "snack") {
+                    if ($info[0] == "Snacks") {
                         echo $info[1];
                     }
                 }

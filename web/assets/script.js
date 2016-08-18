@@ -1,6 +1,6 @@
 $(document).ready(function(){
 
-
+    /* Submit the sign-up form. */
     $('form.create').submit(function(e) {
         e.preventDefault();
 
@@ -22,6 +22,7 @@ $(document).ready(function(){
     });
 
 
+    /* Submit the login form. */
     $('form.login').submit(function(e) {
         e.preventDefault();
 
@@ -47,47 +48,40 @@ $(document).ready(function(){
     });
 
 
-    $('div.modal-body').on('submit', 'form.new-recipe', function(e) {
+    /* Submit the new recipe form. */
+    $('form.new-recipe').submit(function(e) {
         e.preventDefault();
-
-        var recipeName = $('input#recipe-name').val();
-        if (recipeName) {
-            var ingredients = [], instructions = [];
-            var ingrInputs = $('input.recipe-ingredient');
-            var instInputs = $('input.recipe-instruction');
-            for (var i = 0; i < ingrInputs.length; i++) {
-                if (ingrInputs[i].value) {
-                    ingredients.push(ingrInputs[i].value);
+        $.ajax({
+            type: 'POST',
+            url: 'ajax/functions.php',
+            data: $('form.new-recipe :input').filter(function(i,e){return e.value != ""}).serialize(),
+            success: function(msg) {
+                console.log(msg);
+                if (msg == 0) {
+                    location.reload();
+                } else {
+                    alert('Error: Recipe name taken.');
                 }
             }
-            for (var i = 0; i < instInputs.length; i++) {
-                if (instInputs[i].value) {
-                    instructions.push(instInputs[i].value);
+        });
+    });
+
+
+    /* Submit the new ingredient form. */
+    $('form.new-ingredient').submit(function(e) {
+        e.preventDefault();
+        $.ajax({
+            type: 'POST',
+            url: 'ajax/functions.php',
+            data: $(this).serialize(),
+            success: function(msg) {
+                if (msg == 0) {
+                    location.reload();
+                } else {
+                    alert('Error: Ingredient name taken.');
                 }
             }
-
-            $.ajax({
-                type: 'POST',
-                url: 'ajax/functions.php',
-                data: {
-                    action : 'new-recipe',
-                    name : recipeName,
-                    ingrArray : ingredients,
-                    instArray : instructions
-                },
-                success: function(msg) {
-                    console.log(msg);
-                    if (msg == 0) {
-                        alert('Success! New recipe added.');
-                        $('#new-recipe').modal('hide');
-                    } else {
-                        alert('Error: Recipe name taken.');
-                    }
-                }
-            });
-        } else {
-            alert('Error: No recipe name given.');
-        }
+        });
     });
 
 
@@ -116,16 +110,6 @@ $(document).ready(function(){
     });
 
 
-    $('ul.new-ingredients').on('keypress', 'li div input.new-ingredient.last', function(e) {
-        if (this.value) {
-            $(this).removeClass('last');
-            var next = $(this).parent().parent().clone();
-            next.find('input.new-ingredient').addClass('last').val('');
-            $(this).parent().parent().parent().append(next);
-        }
-    });
-
-
     $('ul.new-recipe,ol.new-recipe').on('keypress', 'input.last', function(e) {
         if (this.value) {
             $(this).removeClass('last');
@@ -137,36 +121,7 @@ $(document).ready(function(){
     });
 
 
-    $('button.delete').on('click', function() {
-
-        var deleteType, thisModal;
-        if ($(this).hasClass('ingredient')) {
-            deleteType = 'ingredients';
-            thisModal = $('#edit-ingredient');
-        } else {
-            deleteType = 'recipes';
-            thisModal = $('#edit-recipe');
-        }
-
-        $.ajax({
-            type: 'POST',
-            url: 'ajax/functions.php',
-            data: {
-                action: 'delete',
-                type: deleteType,
-                id: this.id
-            },
-            success: function(msg) {
-                if (msg == 1) {
-                    location.reload();
-                } else {
-                    alert(msg);
-                }
-            }
-        });
-    });
-
-
+    /* Populate the edit-recipe modal. */
     $('button.edit-recipe').on('click', function() {
         $.ajax({
             type: 'GET',
@@ -181,16 +136,17 @@ $(document).ready(function(){
                 var editModal = $('#edit-recipe');
 
                 editModal.find('input.name').val(data.name);
+                editModal.find('select').val(data.mealtype);
                 editModal.find('button.delete').attr('id', data.id);
                 editModal.find('ul.edit-recipe').empty();
                 editModal.find('ol.edit-recipe').empty();
 
                 for (var i = 0; i < data.ingredients.length; i++) {
-                    var ingredient = $('<input class="form-control recipe-ingredient">').val(data.ingredients[i]);
+                    var ingredient = $('<input name="ingrArray[]" class="form-control recipe-ingredient">').val(data.ingredients[i]);
                     editModal.find('ul.edit-recipe').append($('<li></li>').html(ingredient));
                 }
                 for (var i = 0; i < data.instructions.length; i++) {
-                    var instruction = $('<input class="form-control recipe-instruction">').val(data.instructions[i]);
+                    var instruction = $('<input name="instArray[]" class="form-control recipe-instruction">').val(data.instructions[i]);
                     editModal.find('ol.edit-recipe').append($('<li></li>').html(instruction));
                 }
 
@@ -200,21 +156,47 @@ $(document).ready(function(){
     });
 
 
+
+    /* Populate the edit-ingredient modal. */
+    $('tr.ingredient').on('click', function() {
+        var editModal = $('#edit-ingredient');
+        editModal.find('input.name').val($(this).attr('data-name'));
+        editModal.find('input.id').val($(this).attr('id'));
+        editModal.find('select.location').val($(this).attr('data-location'));
+        editModal.find('input.purchase').val($(this).attr('data-purchase'));
+        editModal.find('input.expiration').val($(this).attr('data-expiration'));
+        editModal.find('button.delete').attr('id', $(this).attr('id'));
+        editModal.modal('show');
+    });
+
+
+    /* Save the edited ingredient. */
     $('form.edit-ingredient').submit(function(e) {
         e.preventDefault();
-        var ingrName = $(this).find('input.name').val();
-        var purchaseDate = $(this).find('input.purchase').val();
-        var expirationDate = $(this).find('input.expire').val();
+        $.ajax({
+            type: 'POST',
+            url: 'ajax/functions.php',
+            data: $(this).serialize(),
+            success: function(msg) {
+                if (msg == 1) {
+                    location.reload();
+                } else {
+                    alert(msg);
+                }
+            }
+        });
+    });
 
+
+    /* Handle deletion of recipe or ingredient. */
+    $('button.delete').on('click', function() {
         $.ajax({
             type: 'POST',
             url: 'ajax/functions.php',
             data: {
-                action : 'edit-ingredient',
-                id : this.id,
-                name : ingrName,
-                purchase : purchaseDate,
-                expiration : expirationDate
+                action: 'delete',
+                type: $(this).attr("data-delete"),
+                id: this.id
             },
             success: function(msg) {
                 if (msg == 1) {
@@ -227,26 +209,12 @@ $(document).ready(function(){
     });
 
 
-    $('tr.ingredient').on('click', function() {
-        var editModal = $('#edit-ingredient');
-        editModal.find('input.name').val($(this).attr('data-name'));
-        editModal.find('input.purchase').val($(this).attr('data-purchase'));
-        editModal.find('input.expire').val($(this).attr('data-expire'));
-        editModal.find('button.delete').attr('id', $(this).attr('id'));
-        editModal.find('form').attr('id', $(this).attr('id'));
-        editModal.modal('show');
-    });
-
-
-    $(function () {
-        $('[data-toggle="tooltip"]').tooltip();
-    });
-
     /* Apply tablesorter function to all tables. */
     $('table').tablesorter({
         emptyTo: 'bottom',
         sortList: [[1,0]]
     });
+
 
     /* Clicking on a recipe moves the recipe view to that recipe. */
     $('tr.item').on('click', function() {
@@ -255,6 +223,7 @@ $(document).ready(function(){
         $('.items tbody').children().removeClass('selected');
         $(this).addClass('selected');
     });
+
 
     /* Advance to next or previous recipe on arrow key press.
      * <- = 37, ^ = 38, -> = 39, v = 40 */
