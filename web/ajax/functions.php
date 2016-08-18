@@ -13,7 +13,7 @@ if (isset($_POST["action"])) {
             $name = pg_escape_string($_POST["name"]);
             $mealType = pg_escape_string($_POST["mealType"]);
             $exists = pg_num_rows(pg_query(
-                "SELECT 1 FROM recipes WHERE name = '$name' AND user_id = '$user_id' LIMIT 1"));
+                "SELECT 1 FROM recipes WHERE name='$name' AND user_id=$user_id LIMIT 1"));
             if ($exists) {
                 echo 1; //Error: Recipe exists
             } else {
@@ -22,12 +22,13 @@ if (isset($_POST["action"])) {
                     "SELECT id FROM recipes WHERE name = '$name' and user_id = '$user_id'"))["id"];
                 if (isset($_POST["ingrArray"])) {
                     $pairs = [];
-                    foreach ($_POST["ingrArray"] as $ingr) {
+                    foreach ($_POST["ingrArray"] as $key => $ingr) {
+                        $num = $key + 1;
                         $ingr = pg_escape_string($ingr);
-                        array_push($pairs, "('$ingr', '$id', '$user_id')");
+                        array_push($pairs, "('$ingr', '$num', '$id', '$user_id')");
                     }
                     $pairs = implode(", ", $pairs);
-                    pg_query("INSERT INTO recipe_ingredients (name, recipe_id, user_id) VALUES $pairs");
+                    pg_query("INSERT INTO recipe_ingredients (name, number, recipe_id, user_id) VALUES $pairs");
                 }
                 if (isset($_POST["instArray"])) {
                     $pairs = [];
@@ -49,7 +50,7 @@ if (isset($_POST["action"])) {
             }
             $name = pg_escape_string($_POST["name"]);
             $exists = pg_num_rows(pg_query(
-                "SELECT 1 FROM ingredients WHERE ingredient = '$name' AND user_id = '$user_id' LIMIT 1"));
+                "SELECT 1 FROM ingredients WHERE ingredient='$name' AND user_id='$user_id' LIMIT 1"));
             if ($exists) {
                 echo 1; //Error: Ingredient exists
             } else {
@@ -61,6 +62,56 @@ if (isset($_POST["action"])) {
             }
 
         } elseif ($_POST["action"] == "edit-recipe") {
+            $name = pg_escape_string($_POST["name"]);
+            $mealtype = pg_escape_string($_POST["mealType"]);
+            $recipe_id = $_POST["id"];
+            pg_query("UPDATE recipes SET name='$name', mealtype='$mealtype' WHERE id=$recipe_id AND user_id=$user_id");
+
+            if (isset($_POST["ingrArray"])) {
+                $numIngr = pg_fetch_row(pg_query("SELECT COUNT(*) FROM recipe_ingredients WHERE recipe_id=$recipe_id AND user_id=$user_id"))[0];
+                $pairs = [];
+                foreach ($_POST["ingrArray"] as $key => $ingr) {
+                    $num = $key + 1;
+                    $ingr = pg_escape_string($ingr);
+                    if ($num <= $numIngr) {
+                        pg_query("UPDATE recipe_ingredients SET name='$ingr' WHERE number=$num AND recipe_id=$recipe_id AND user_id=$user_id");
+                    } else {
+                        array_push($pairs, "('$ingr', '$num', '$recipe_id', '$user_id')");
+                    }
+                }
+                $newNumInst = count($_POST["ingrArray"]);
+                if ($newNumInst > $numIngr) {
+                    $pairs = implode(", ", $pairs);
+                    pg_query("INSERT INTO recipe_ingredients (name, number, recipe_id, user_id) VALUES $pairs");
+                } else if ($newNumInst < $numIngr) {
+                    pg_query("DELETE FROM recipe_ingredients WHERE number>$newNumInst AND recipe_id=$recipe_id AND user_id=$user_id");
+                }
+            } else {
+                pg_query("DELETE FROM recipe_instructions WHERE recipe_id = $recipe_id AND user_id = $user_id");
+            }
+
+            if (isset($_POST["instArray"])) {
+                $numInst = pg_fetch_row(pg_query("SELECT COUNT(*) FROM recipe_instructions WHERE recipe_id=$recipe_id AND user_id=$user_id"))[0];
+                $pairs = [];
+                foreach ($_POST["instArray"] as $key => $inst) {
+                    $num = $key + 1;
+                    $inst = pg_escape_string($inst);
+                    if ($num <= $numInst) {
+                        pg_query("UPDATE recipe_instructions SET instruction='$inst' WHERE number=$num AND recipe_id=$recipe_id AND user_id=$user_id");
+                    } else {
+                        array_push($pairs, "('$inst', '$num', '$recipe_id', '$user_id')");
+                    }
+                }
+                $newNumInst = count($_POST["instArray"]);
+                if ($newNumInst > $numInst) {
+                    $pairs = implode(", ", $pairs);
+                    pg_query("INSERT INTO recipe_instructions (instruction, number, recipe_id, user_id) VALUES $pairs");
+                } else if ($newNumInst < $numInst) {
+                    pg_query("DELETE FROM recipe_instructions WHERE number>$newNumInst AND recipe_id=$recipe_id AND user_id=$user_id");
+                }
+            } else {
+                pg_query("DELETE FROM recipe_instructions WHERE recipe_id = $recipe_id AND user_id = $user_id");
+            }
 
         } elseif ($_POST["action"] == "edit-ingredient") {
             $id = $_POST["id"];
@@ -82,10 +133,10 @@ if (isset($_POST["action"])) {
             $id = $_POST["id"];
             $table = $_POST["type"];
             if ($table == "recipes") {
-                pg_query("DELETE FROM recipe_ingredients WHERE recipe_id = $id AND user_id = $user_id");
-                pg_query("DELETE FROM recipe_instructions WHERE recipe_id = $id AND user_id = $user_id");
+                pg_query("DELETE FROM recipe_ingredients WHERE recipe_id=$id AND user_id=$user_id");
+                pg_query("DELETE FROM recipe_instructions WHERE recipe_id=$id AND user_id=$user_id");
             }
-            $result = pg_query("DELETE FROM $table WHERE id = $id AND user_id = $user_id");
+            $result = pg_query("DELETE FROM $table WHERE id=$id AND user_id=$user_id");
             echo pg_affected_rows($result);
         }
 
@@ -129,20 +180,20 @@ if (isset($_POST["action"])) {
         $user_id = $_SESSION["user_id"];
         if ($_GET["action"] == "get-recipe") {
             $id = $_GET["id"];
-            $result = pg_fetch_assoc(pg_query("SELECT name, mealtype FROM recipes WHERE user_id = $user_id AND id = $id"));
+            $result = pg_fetch_assoc(pg_query("SELECT name, mealtype FROM recipes WHERE user_id=$user_id AND id=$id"));
             $name = $result["name"];
             $mealtype = $result["mealtype"];
 
             $ingredients = array();
-            $result = pg_query("SELECT * FROM recipe_ingredients WHERE user_id = $user_id AND recipe_id = $id");
+            $result = pg_query("SELECT * FROM recipe_ingredients WHERE user_id=$user_id AND recipe_id=$id ORDER BY number");
             while ($row = pg_fetch_assoc($result)) {
-                array_push($ingredients, $row["name"]);
+                $ingredients[$row["id"]] = $row["name"];
             }
 
             $instructions = array();
-            $result = pg_query("SELECT * FROM recipe_instructions WHERE user_id = $user_id AND recipe_id = $id ORDER BY number");
+            $result = pg_query("SELECT * FROM recipe_instructions WHERE user_id=$user_id AND recipe_id=$id ORDER BY number");
             while ($row = pg_fetch_assoc($result)) {
-                array_push($instructions, $row["instruction"]);
+                $instructions[$row["number"]] = $row["instruction"];
             }
 
             $data = array(

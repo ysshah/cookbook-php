@@ -12,9 +12,13 @@ body {
 //input[type='text'], input[type='password'], input[type='email'] {
 //    font-size: 16px;
 //}
-input.form-control, select.form-control {
+input.form-control, select.form-control, textarea.form-control {
     font-size: 16px;
     height: 40px;
+}
+textarea.form-control {
+    vertical-align: top;
+    resize: vertical;
 }
 
 /* LOGIN PAGE */
@@ -83,6 +87,9 @@ table {
     tr td div {
         display: inline-block;
     }
+}
+table.items {
+    margin-bottom: 20px;
 }
 th {
     font-weight: 400;

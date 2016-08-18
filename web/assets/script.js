@@ -54,7 +54,7 @@ $(document).ready(function(){
         $.ajax({
             type: 'POST',
             url: 'ajax/functions.php',
-            data: $('form.new-recipe :input').filter(function(i,e){return e.value != ""}).serialize(),
+            data: $('form.new-recipe :input').filter(function(i,e){return e.value != ''}).serialize(),
             success: function(msg) {
                 console.log(msg);
                 if (msg == 0) {
@@ -85,42 +85,6 @@ $(document).ready(function(){
     });
 
 
-    $('div.modal-body').on('submit', 'form.edit-recipe', function(e) {
-        e.preventDefault();
-
-        // $.ajax({
-        //     type: 'POST',
-        //     url: 'ajax/functions.php',
-        //     data: {
-        //         action : 'edit-recipe',
-        //         name : recipeName,
-        //         ingrArray : ingredients,
-        //         instArray : instructions
-        //     },
-        //     success: function(msg) {
-        //         console.log(msg);
-        //         if (msg == 0) {
-        //             alert('Success! New recipe added.');
-        //             $('#new-recipe').modal('hide');
-        //         } else {
-        //             alert('Error: Recipe name taken.');
-        //         }
-        //     }
-        // });
-    });
-
-
-    $('ul.new-recipe,ol.new-recipe').on('keypress', 'input.last', function(e) {
-        if (this.value) {
-            $(this).removeClass('last');
-            var next = $(this).clone();
-            next.addClass('last');
-            next.val('');
-            $(this).parent().parent().append($('<li></li>').append(next));
-        }
-    });
-
-
     /* Populate the edit-recipe modal. */
     $('button.edit-recipe').on('click', function() {
         $.ajax({
@@ -133,28 +97,53 @@ $(document).ready(function(){
             success: function(data) {
                 data = JSON.parse(data);
 
+                console.log(data);
+
                 var editModal = $('#edit-recipe');
 
-                editModal.find('input.name').val(data.name);
+                editModal.find('input.name').val(data.name);                editModal.find('input.id').val(data.id);
                 editModal.find('select').val(data.mealtype);
                 editModal.find('button.delete').attr('id', data.id);
                 editModal.find('ul.edit-recipe').empty();
                 editModal.find('ol.edit-recipe').empty();
 
-                for (var i = 0; i < data.ingredients.length; i++) {
-                    var ingredient = $('<input name="ingrArray[]" class="form-control recipe-ingredient">').val(data.ingredients[i]);
-                    editModal.find('ul.edit-recipe').append($('<li></li>').html(ingredient));
-                }
-                for (var i = 0; i < data.instructions.length; i++) {
-                    var instruction = $('<input name="instArray[]" class="form-control recipe-instruction">').val(data.instructions[i]);
-                    editModal.find('ol.edit-recipe').append($('<li></li>').html(instruction));
-                }
+                var ingredient = $('<input name="ingrArray[]" class="form-control recipe-ingredient">');
+                var instruction = $('<textarea name="instArray[]" class="form-control recipe-instruction"></textarea>');
+
+                $.each(data.ingredients, function(key, value) {
+                    var ingr = ingredient.clone().val(value);
+                    editModal.find('ul.edit-recipe').append($('<li></li>').html(ingr));
+                });
+                $.each(data.instructions, function(key, value) {
+                    var inst = instruction.clone().val(value);
+                    editModal.find('ol.edit-recipe').append($('<li></li>').html(inst));
+                });
+
+                editModal.find('ul.edit-recipe').append($('<li></li>').html(ingredient.clone().addClass('last')));
+                editModal.find('ol.edit-recipe').append($('<li></li>').html(instruction.clone().addClass('last')));
 
                 $('#edit-recipe').modal('show');
             }
         });
     });
 
+
+    /* Submit the edit ingredient form. */
+    $('form.edit-recipe').submit(function(e) {
+        e.preventDefault();
+        $.ajax({
+            type: 'POST',
+            url: 'ajax/functions.php',
+            data: $('form.edit-recipe :input').filter(function(i,e){return e.value != ''}).serialize(),
+            success: function(msg) {
+                if (msg == 0) {
+                    location.reload();
+                } else {
+                    alert(msg);
+                }
+            }
+        });
+    });
 
 
     /* Populate the edit-ingredient modal. */
@@ -209,6 +198,18 @@ $(document).ready(function(){
     });
 
 
+    /* Append additional ingredient and instruction inputs when typing. */
+    $('ul.new-recipe,ol.new-recipe,ul.edit-recipe,ol.edit-recipe').on('input', 'input.last,textarea.last', function() {
+        if (this.value) {
+            $(this).removeClass('last');
+            var next = $(this).clone();
+            next.addClass('last');
+            next.val('');
+            $(this).parent().parent().append($('<li></li>').append(next));
+        }
+    });
+
+
     /* Apply tablesorter function to all tables. */
     $('table').tablesorter({
         emptyTo: 'bottom',
@@ -218,7 +219,7 @@ $(document).ready(function(){
 
     /* Clicking on a recipe moves the recipe view to that recipe. */
     $('tr.item').on('click', function() {
-        $($('div.recipe')[this.id]).show().siblings().hide();
+        $('div.recipe#r'+this.id).show().siblings().hide();
 
         $('.items tbody').children().removeClass('selected');
         $(this).addClass('selected');
@@ -227,7 +228,7 @@ $(document).ready(function(){
 
     /* Advance to next or previous recipe on arrow key press.
      * <- = 37, ^ = 38, -> = 39, v = 40 */
-    $('html').keydown(function(e) {
+    $('div.column').keydown(function(e) {
         if (37 <= e.which && e.which <= 40) {
             e.preventDefault();
             var selected = $('.selected');

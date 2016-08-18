@@ -101,71 +101,98 @@ if (!isset($_SESSION["username"])) { ?>
         );
     }
 
-    function generateRecipeHTMLs($recipe, $num) {
-        global $ingredients, $user_id;
-
-        $name = $recipe["name"];
-        $id = $recipe["id"];
-        $remain = $ingrHTML = $instHTML = "";
+    /* Recipes */
+    $recipes = array();
+    $result = pg_query("SELECT * FROM recipes WHERE user_id='$user_id'");
+    while ($recipe = pg_fetch_assoc($result)) {
+        $recipe_id = $recipe["id"];
+        $recipeIngredients = $instructions = array();
+        $minDaysRemaining = 999;
         $able = "yes";
 
-        $result = pg_query("SELECT * FROM recipe_ingredients WHERE recipe_id = $id AND user_id = $user_id");
-        if (pg_num_rows($result)) {
-            $ingrHTML .= "<table class='ingredients'><thead><tr><th>Ingredients</th>"
-                ."<th class='remaining'>Days remaining</th></tr></thead><tbody>";
-            while ($ingredientArray = pg_fetch_assoc($result)) {
-                $days = "";
-                $ingredient = $ingredientArray["name"];
-                if (array_key_exists($ingredient, $ingredients)) {
-                    $instock = "yes";
-                    $days = $ingredients[$ingredient]["remain"];
-                    if ($days !== "" and ($remain === "" or $days < $remain)) {
-                        $remain = $days;
+        $res = pg_query("SELECT name,number FROM recipe_ingredients WHERE recipe_id=$recipe_id AND user_id=$user_id");
+        if (pg_num_rows($res)) {
+            while ($row = pg_fetch_assoc($res)) {
+                $ingredientInfo = array("ingredient" => $row["name"]);
+                if (array_key_exists($row["name"], $ingredients)) {
+                    $daysRemaining = $ingredients[$row["name"]]["remain"];
+                    if ($daysRemaining !== "" and $daysRemaining < $minDaysRemaining) {
+                        $minDaysRemaining = $daysRemaining;
                     }
+                    $ingredientInfo["daysRemaining"] = $daysRemaining;
+                    $ingredientInfo["instock"] = "yes";
                 } else {
-                    $instock = "no";
+                    $ingredientInfo["daysRemaining"] = "";
+                    $ingredientInfo["instock"] = "no";
                     $able = "no";
                 }
-                $ingrHTML .= "<tr><td class='ingredient $instock'>$ingredient</td>"
-                    ."<td class='remaining'>$days</td></tr>";
+                $recipeIngredients[$row["number"]] = $ingredientInfo;
             }
-            $ingrHTML .= "</tbody></table>";
         } else {
-            $lower = strtolower($name);
+            $lower = strtolower($recipe["name"]);
             if (array_key_exists($lower, $ingredients)) {
-                $remain = $ingredients[$lower]["remain"];
+                $minDaysRemaining = $ingredients[$lower]["remain"];
             } else {
                 $able = "no";
             }
         }
 
-        if ($able == "no") {
-            $remain = "";
+        $res = pg_query("SELECT instruction,number FROM recipe_instructions WHERE recipe_id=$recipe_id AND user_id=$user_id");
+        while ($row = pg_fetch_assoc($res)) {
+            $instructions[$row["number"]] = $row["instruction"];
         }
 
-        $result = pg_query("SELECT instruction, number FROM recipe_instructions WHERE recipe_id = $id AND user_id = $user_id ORDER BY number");
-        if (pg_num_rows($result)) {
-            $instHTML = "<div class='instr-title'>Instructions</div>"
-                ."<ol class='instructions'>";
-            while ($instruction = pg_fetch_assoc($result)) {
-                $instHTML .= "<li class='instruction'>".$instruction["instruction"]."</li>";
+        if ($able === "no" or $minDaysRemaining == 999) {
+            $minDaysRemaining = "";
+        }
+        $recipes[$recipe_id] = array(
+            "name" => $recipe["name"],
+            "mealtype" => $recipe["mealtype"],
+            "ingredients" => $recipeIngredients,
+            "instructions" => $instructions,
+            "able" => $able,
+            "daysRemaining" => $minDaysRemaining
+        );
+    }
+
+
+    function output_items($recipes, $mealtype) {
+        $str = "";
+        foreach ($recipes as $id => $info) {
+            if ($info["mealtype"] == $mealtype) {
+                $name = $info["name"];
+                $able = $info["able"];
+                $remain = $info["daysRemaining"];
+                $str .= "
+                <tr class='item $able' id='$id'>
+                    <td>$name</td>
+                    <td class='remaining'>$remain</td>
+                </tr>
+                ";
             }
-            $instHTML .= "</ol>";
         }
-
-        $recipeHTML = "<div id='$num' class='recipe'><div class='name'>$name</div>$ingrHTML$instHTML<button class='btn btn-default edit-recipe' id='$id'>Edit</button></div>";
-        $itemHTML = "<tr class='item $able' id='$num'><td>$name</td><td class='remaining'>$remain</td></tr>";
-        return array($recipe["mealtype"], $itemHTML, $recipeHTML);
+        return $str;
     }
 
-    /* Recipes */
-    $num = 0;
-    $recipes = array();
-    $result = pg_query("SELECT * FROM recipes WHERE user_id = '$user_id'");
-    while ($recipe = pg_fetch_assoc($result)) {
-        $recipes[$recipe["name"]] = generateRecipeHTMLs($recipe, $num);
-        $num += 1;
+
+    function output_table($recipes, $mealtype) {
+        $rows = output_items($recipes, $mealtype);
+        echo "
+        <table class='items'>
+            <thead>
+                <tr>
+                    <th>$mealtype</th>
+                    <th class='remaining'>Days Remaining</th>
+                </tr>
+            </thead>
+            <tbody>
+                $rows
+            </tbody>
+        </table>
+        ";
     }
+
+
     ?>
 
     <div id="loggedin">Logged in: <?php echo $_SESSION["username"]; ?></div>
@@ -174,12 +201,14 @@ if (!isset($_SESSION["username"])) { ?>
         <input type="submit" name="action" value="Log Out">
     </form>
 
-    <div class="modal fade" id="new-recipe" tabindex="-1" role="dialog" aria-labelledby="new-recipe-label">
+    <div class="modal fade" id="new-recipe" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="new-recipe-label">Add New Recipe</h4>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Add New Recipe</h4>
                 </div>
                 <div class="modal-body">
                     <form class="new-recipe">
@@ -206,7 +235,7 @@ if (!isset($_SESSION["username"])) { ?>
                         <div class="form-group">
                             <label>Instructions</label>
                             <ol class="new-recipe">
-                                <li><input name="instArray[]" class="form-control recipe-instruction last" type="text"></li>
+                                <li><textarea name="instArray[]" class="form-control recipe-instruction last" type="text"></textarea></li>
                             </ol>
                         </div>
                     </form>
@@ -219,23 +248,27 @@ if (!isset($_SESSION["username"])) { ?>
         </div>
     </div>
 
-    <div class="modal fade" id="edit-recipe" tabindex="-1" role="dialog" aria-labelledby="edit-recipe-label">
+    <div class="modal fade" id="edit-recipe" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="edit-recipe-label">Edit Recipe</h4>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Edit Recipe</h4>
                 </div>
                 <div class="modal-body">
                     <form class="edit-recipe">
                         <input type="submit" id="submit-edit-recipe" class="hidden">
+                        <input name="action" value="edit-recipe" class="hidden">
+                        <input name="id" class="hidden id">
                         <div class="form-group">
                             <label class="control-label" for="recipe-name">Recipe Name</label>
-                            <input class="form-control name" type="text" placeholder="Required" required>
+                            <input name="name" class="form-control name" type="text" placeholder="Required" required>
                         </div>
                         <div class="form-group">
                             <label class="control-label">Meal Type</label>
-                            <select class="form-control">
+                            <select name="mealType" class="form-control">
                                 <option>Breakfast</option>
                                 <option>Lunch / Dinner</option>
                                 <option>Snacks</option>
@@ -260,12 +293,14 @@ if (!isset($_SESSION["username"])) { ?>
         </div>
     </div>
 
-    <div class="modal fade bs-example-modal-lg" id="new-ingredients" tabindex="-1" role="dialog" aria-labelledby="new-ingredients-label">
+    <div class="modal fade bs-example-modal-lg" id="new-ingredients" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="new-ingredients-label">Add Ingredient</h4>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Add Ingredient</h4>
                 </div>
                 <div class="modal-body">
                     <form class="new-ingredient">
@@ -396,57 +431,11 @@ if (!isset($_SESSION["username"])) { ?>
     <div class="column">
         <div class="title">Items</div>
         <div id="items">
-            <table id="breakfast-items" class="items">
-                <thead>
-                    <tr>
-                        <th>Breakfast</th>
-                        <th class="remaining">Days Remaining</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php
-                foreach ($recipes as $name => $info) {
-                    if ($info[0] == "Breakfast") {
-                        echo $info[1];
-                    }
-                }
-                ?>
-                </tbody>
-            </table>
-            <table id="dinner-items" class="items">
-                <thead>
-                    <tr>
-                        <th>Lunch / Dinner</th>
-                        <th class="remaining">Days Remaining</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php
-                foreach ($recipes as $name => $info) {
-                    if ($info[0] == "Lunch / Dinner") {
-                        echo $info[1];
-                    }
-                }
-                ?>
-                </tbody>
-            </table>
-            <table id="snack-items" class="items">
-                <thead>
-                    <tr>
-                        <th>Snacks</th>
-                        <th class="remaining">Days Remaining</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php
-                foreach ($recipes as $name => $info) {
-                    if ($info[0] == "Snacks") {
-                        echo $info[1];
-                    }
-                }
-                ?>
-                </tbody>
-            </table>
+            <?php
+            output_table($recipes, "Breakfast");
+            output_table($recipes, "Lunch / Dinner");
+            output_table($recipes, "Snacks");
+            ?>
         </div>
     </div>
     <div class="border"></div>
@@ -454,11 +443,40 @@ if (!isset($_SESSION["username"])) { ?>
         <div class="title">Recipe</div>
         <button id="newRecipeModal" type="button" class="btn btn-primary" data-toggle="modal" data-target="#new-recipe">Add New Recipe</button>
         <div id="recipes">
-        <?php
-        foreach ($recipes as $name => $info) {
-            echo $info[2];
-        }
-        ?>
+        <?php foreach ($recipes as $recipe_id => $recipe) { ?>
+            <div id="r<?php echo $recipe_id; ?>" class="recipe">
+                <div class="name"><?php echo $recipe["name"]; ?></div>
+
+                <?php if (count($recipe["ingredients"])) { ?>
+                <table class="ingredients">
+                <thead>
+                    <tr>
+                        <th>Ingredients</th>
+                        <th class="remaining">Days remaining</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($recipe["ingredients"] as $num => $info) { ?>
+                    <tr>
+                        <td class='ingredient <?php echo $info["instock"]; ?>'><?php echo $info["ingredient"]; ?></td>
+                        <td class='remaining'><?php echo $info["daysRemaining"]; ?></td>
+                    </tr>
+                <?php } ?>
+                </tbody>
+                </table>
+                <?php } ?>
+                
+                <?php if (count($recipe["instructions"])) { ?>
+                <div class="instr-title">Instructions</div>
+                <ol class="instructions">
+                <?php foreach ($recipe["instructions"] as $num => $instruction) {
+                    echo "<li class='instruction'>$instruction</li>";
+                } ?>
+                </ol>
+                <?php } ?>
+                <button class='btn btn-default edit-recipe' id='<?php echo $recipe_id; ?>'>Edit</button>
+            </div>
+        <?php } ?>
         </div>
     </div>
 
